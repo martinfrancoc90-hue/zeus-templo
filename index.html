@@ -207,65 +207,117 @@ let toastT;function toast(t){const e=$('#toast');e.textContent=t;e.classList.add
 /* ---------- músculos y ejercicios ---------- */
 const M={pecho:'Pecho',hombros:'Hombros',biceps:'Bíceps',triceps:'Tríceps',antebrazos:'Antebrazos',abdomen:'Abdomen',cuadriceps:'Cuádriceps',isquios:'Isquiotibiales',gluteos:'Glúteos',gemelos:'Gemelos',dorsales:'Dorsales',trapecio:'Trapecio',lumbares:'Lumbares'};
 const GRUPOS_M=['Pecho','Espalda','Piernas','Glúteos','Hombros','Brazos','Core'];
-const P0={h:[50,17],s:[50,28],e:[51,42],w:[52,55],p:[50,52],k:[50,72],f:[50,92]};
-const INCL={f:[50,92],k:[55,74],p:[38,60],s:[58,44],h:[66,38],e:[58,58],w:[58,72]};
 const EJ_BASE=[
- {id:'sentadilla',img:2,vid:1,nombre:'Sentadilla con barra',grupo:'Piernas',prim:['cuadriceps','gluteos'],sec:['isquios','lumbares','abdomen'],equipo:'Barra y rack',tip:'Pies al ancho de hombros. Bajá hasta que el muslo quede paralelo al piso, con la espalda firme.',
-  pose:{a:{...P0,e:[55,38],w:[53,29]},b:{h:[54,36],s:[50,46],e:[57,56],w:[53,47],p:[39,67],k:[58,73]},eq:{bar:'w'}}},
- {id:'banca',img:2,nombre:'Press de banca',grupo:'Pecho',prim:['pecho'],sec:['triceps','hombros'],equipo:'Banco y barra',tip:'Bajá la barra al pecho de forma controlada y empujá sin despegar la espalda del banco.',
-  pose:{a:{h:[22,58],s:[32,60],p:[58,61],k:[72,70],f:[76,92],e:[32,46],w:[32,33]},b:{e:[36,71],w:[33,58]},eq:{bar:'w',bench:[16,64,50,5]}}},
- {id:'muerto',img:2,nombre:'Peso muerto',grupo:'Espalda',prim:['isquios','gluteos','lumbares'],sec:['trapecio','antebrazos','cuadriceps'],equipo:'Barra',tip:'La barra sube pegada a las piernas. Espalda recta de principio a fin.',
-  pose:{a:{...INCL},b:{...P0,w:[52,56]},eq:{bar:'w'}}},
- {id:'dominadas',img:2,nombre:'Dominadas',grupo:'Espalda',prim:['dorsales'],sec:['biceps','trapecio','antebrazos'],equipo:'Barra fija',tip:'Subí hasta pasar el mentón por encima de la barra y bajá estirando los brazos por completo.',
-  pose:{a:{w:[50,8],e:[50,21],s:[50,34],h:[45,27],p:[50,58],k:[53,76],f:[47,90]},b:{s:[50,18],e:[60,15],h:[44,9],p:[50,42],k:[53,60],f:[47,74]},eq:{fix:[50,8],floor:false}}},
- {id:'militar',img:2,nombre:'Press militar',grupo:'Hombros',prim:['hombros'],sec:['triceps','trapecio','abdomen'],equipo:'Barra',tip:'Empujá la barra en línea recta sobre la cabeza, con el abdomen apretado.',
-  pose:{a:{...P0,e:[57,40],w:[56,27]},b:{e:[54,15],w:[54,2]},eq:{bar:'w'}}},
- {id:'vuelos',img:2,nombre:'Vuelos laterales',grupo:'Hombros',prim:['hombros'],sec:['trapecio'],equipo:'Mancuernas',tip:'Subí los brazos hasta la altura de los hombros con los codos apenas flexionados.',
-  pose:{a:{...P0},b:{e:[61,31],w:[73,30]},eq:{db:'w'}}},
- {id:'curl',img:2,nombre:'Curl de bíceps',grupo:'Brazos',prim:['biceps'],sec:['antebrazos'],equipo:'Mancuernas',tip:'Codos pegados al cuerpo. Subí sin balancear el torso.',
-  pose:{a:{...P0,e:[50,42],w:[53,55]},b:{w:[59,32]},eq:{db:'w'}}},
- {id:'triceps',img:2,nombre:'Extensión de tríceps en polea',grupo:'Brazos',prim:['triceps'],sec:['antebrazos'],equipo:'Polea alta',tip:'Solo se mueve el antebrazo. Estirá el brazo por completo abajo.',
-  pose:{a:{...P0,e:[51,42],w:[62,34]},b:{w:[55,55]},eq:{cable:[74,-4]}}},
- {id:'remo',img:2,nombre:'Remo con barra',grupo:'Espalda',prim:['dorsales','trapecio'],sec:['biceps','lumbares'],equipo:'Barra',tip:'Torso inclinado y firme. Llevá la barra hacia el ombligo juntando las escápulas.',
-  pose:{a:{...INCL,w:[58,71]},b:{e:[46,48],w:[56,57]},eq:{bar:'w'}}},
- {id:'zancadas',img:2,nombre:'Zancadas',grupo:'Piernas',prim:['cuadriceps','gluteos'],sec:['isquios','gemelos'],equipo:'Mancuernas',tip:'Paso largo. La rodilla de atrás baja casi hasta el piso y el torso queda vertical.',
-  pose:{a:{...P0,k2:[50,72],f2:[49,92]},b:{h:[50,29],s:[50,40],e:[51,54],w:[52,67],p:[50,64],k:[65,73],f:[66,92],k2:[44,82],f2:[28,88]},eq:{db:'w'}}},
- {id:'hipthrust',img:2,nombre:'Hip thrust',grupo:'Glúteos',prim:['gluteos'],sec:['isquios','lumbares'],equipo:'Banco y barra',tip:'Espalda alta apoyada en el banco. Subí la cadera y apretá los glúteos un segundo arriba.',
-  pose:{a:{h:[20,56],s:[30,62],p:[48,80],k:[66,70],f:[70,92],e:[40,70],w:[48,76]},b:{p:[54,64],k:[72,68],e:[42,58],w:[54,60]},eq:{bar:'p',bench:[10,66,20,28]}}},
- {id:'gemelos',img:2,nombre:'Elevación de talones',grupo:'Piernas',prim:['gemelos'],sec:[],equipo:'Mancuernas',tip:'Subí lo más alto posible sobre la punta de los pies y bajá lento.',
-  pose:{a:{...P0},b:{h:[50,12],s:[50,23],e:[51,37],w:[52,50],p:[50,47],k:[50,67]},eq:{db:'w'}}},
- {id:'flexiones',img:2,nombre:'Flexiones de brazos',grupo:'Pecho',prim:['pecho'],sec:['triceps','hombros','abdomen'],equipo:'Sin equipo',tip:'Cuerpo en línea recta, de la cabeza a los talones. Pecho casi al piso.',
-  pose:{a:{f:[86,90],w:[28,90],s:[28,64],e:[28,77],p:[56,76],k:[70,82],h:[19,59]},b:{s:[28,80],e:[38,82],p:[56,84],k:[70,87],h:[19,76]}}},
- {id:'plancha',img:1,nombre:'Plancha',grupo:'Core',prim:['abdomen'],sec:['hombros','lumbares','gluteos'],equipo:'Sin equipo',tip:'Antebrazos apoyados, cadera alineada. Se mide en segundos, no en repeticiones.',
-  pose:{a:{h:[17,62],s:[26,68],e:[26,88],w:[39,88],p:[54,75],k:[70,82],f:[86,90]},b:{p:[54,73]}}},
- {id:'crunch',img:2,nombre:'Abdominales cortos',grupo:'Core',prim:['abdomen'],sec:[],equipo:'Colchoneta',tip:'Despegá solo los hombros del piso, sin tirar del cuello.',
-  pose:{a:{p:[50,88],k:[64,70],f:[78,90],s:[27,88],h:[17,86],e:[22,78],w:[17,82]},b:{s:[29,76],h:[22,67],e:[27,66],w:[21,64]}}}
+ {id:'sentadilla',nombre:'Sentadilla con barra',grupo:'Piernas',prim:['cuadriceps','gluteos'],sec:['isquios','lumbares','abdomen'],equipo:'Barra y rack',tip:'Pies al ancho de hombros. Bajá hasta que el muslo quede paralelo al piso, con la espalda firme.'},
+ {id:'banca',nombre:'Press de banca',grupo:'Pecho',prim:['pecho'],sec:['triceps','hombros'],equipo:'Banco y barra',tip:'Bajá la barra al pecho de forma controlada y empujá sin despegar la espalda del banco.'},
+ {id:'muerto',nombre:'Peso muerto',grupo:'Espalda',prim:['isquios','gluteos','lumbares'],sec:['trapecio','antebrazos','cuadriceps'],equipo:'Barra',tip:'La barra sube pegada a las piernas. Espalda recta de principio a fin.'},
+ {id:'dominadas',nombre:'Dominadas',grupo:'Espalda',prim:['dorsales'],sec:['biceps','trapecio','antebrazos'],equipo:'Barra fija',tip:'Subí hasta pasar el mentón por encima de la barra y bajá estirando los brazos por completo.'},
+ {id:'militar',nombre:'Press militar',grupo:'Hombros',prim:['hombros'],sec:['triceps','trapecio','abdomen'],equipo:'Barra',tip:'Empujá la barra en línea recta sobre la cabeza, con el abdomen apretado.'},
+ {id:'vuelos',nombre:'Vuelos laterales',grupo:'Hombros',prim:['hombros'],sec:['trapecio'],equipo:'Mancuernas',tip:'Subí los brazos hasta la altura de los hombros con los codos apenas flexionados.'},
+ {id:'curl',nombre:'Curl de bíceps',grupo:'Brazos',prim:['biceps'],sec:['antebrazos'],equipo:'Mancuernas',tip:'Codos pegados al cuerpo. Subí sin balancear el torso.'},
+ {id:'triceps',nombre:'Extensión de tríceps en polea',grupo:'Brazos',prim:['triceps'],sec:['antebrazos'],equipo:'Polea alta',tip:'Solo se mueve el antebrazo. Estirá el brazo por completo abajo.'},
+ {id:'remo',nombre:'Remo con barra',grupo:'Espalda',prim:['dorsales','trapecio'],sec:['biceps','lumbares'],equipo:'Barra',tip:'Torso inclinado y firme. Llevá la barra hacia el ombligo juntando las escápulas.'},
+ {id:'zancadas',nombre:'Zancadas',grupo:'Piernas',prim:['cuadriceps','gluteos'],sec:['isquios','gemelos'],equipo:'Mancuernas',tip:'Paso largo. La rodilla de atrás baja casi hasta el piso y el torso queda vertical.'},
+ {id:'hipthrust',nombre:'Hip thrust',grupo:'Glúteos',prim:['gluteos'],sec:['isquios','lumbares'],equipo:'Banco y barra',tip:'Espalda alta apoyada en el banco. Subí la cadera y apretá los glúteos un segundo arriba.'},
+ {id:'gemelos',nombre:'Elevación de talones',grupo:'Piernas',prim:['gemelos'],sec:[],equipo:'Mancuernas',tip:'Subí lo más alto posible sobre la punta de los pies y bajá lento.'},
+ {id:'flexiones',nombre:'Flexiones de brazos',grupo:'Pecho',prim:['pecho'],sec:['triceps','hombros','abdomen'],equipo:'Sin equipo',tip:'Cuerpo en línea recta, de la cabeza a los talones. Pecho casi al piso.'},
+ {id:'plancha',nombre:'Plancha',grupo:'Core',prim:['abdomen'],sec:['hombros','lumbares','gluteos'],equipo:'Sin equipo',tip:'Antebrazos apoyados, cadera alineada. Se mide en segundos, no en repeticiones.'},
+ {id:'crunch',nombre:'Abdominales cortos',grupo:'Core',prim:['abdomen'],sec:[],equipo:'Colchoneta',tip:'Despegá solo los hombros del piso, sin tirar del cuello.'}
 ];
 
-function fig(ej,t){
-  const P=ej&&ej.pose;
-  if(!P) return `<svg viewBox="0 0 100 80" role="img" aria-label="Sin ilustración"><text x="50" y="44" text-anchor="middle" font-size="9" fill="#8c979a" font-family="sans-serif">sin ilustración</text></svg>`;
-  const g=k=>{const a=P.a[k];if(!a)return null;const b=P.b[k]||a;return[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]};
-  const ln=(p,q,w,c)=>`<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" x2="${q[0].toFixed(1)}" y2="${q[1].toFixed(1)}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
-  const J={};['h','s','e','w','p','k','f','k2','f2'].forEach(k=>J[k]=g(k));
-  const q=P.eq||{},c='#eef1f1',c2='#5d686b',au='#2fc4c0';let o='';
-  if(q.floor!==false)o+=`<line x1="4" y1="95" x2="96" y2="95" stroke="#30373a" stroke-width="1.5"/>`;
-  if(q.bench)o+=`<rect x="${q.bench[0]}" y="${q.bench[1]}" width="${q.bench[2]}" height="${q.bench[3]}" rx="2" fill="#30373a"/><rect x="${q.bench[0]+q.bench[2]/2-2}" y="${q.bench[1]}" width="4" height="${95-q.bench[1]}" fill="#30373a"/>`;
-  if(q.fix)o+=`<line x1="${q.fix[0]}" y1="-8" x2="${q.fix[0]}" y2="${q.fix[1]}" stroke="#30373a" stroke-width="2"/>`;
-  if(q.cable)o+=ln(q.cable,J.w,1.2,au);
-  if(J.k2)o+=ln(J.p,J.k2,5,c2)+ln(J.k2,J.f2,5,c2);
-  o+=ln(J.p,J.k,5.5,c)+ln(J.k,J.f,5,c)+ln(J.s,J.p,7.5,c)+`<circle cx="${J.h[0].toFixed(1)}" cy="${J.h[1].toFixed(1)}" r="6.2" fill="${c}"/>`;
-  const eqAt=k=>{const j=J[k];if(q.bar===k)return`<circle cx="${j[0].toFixed(1)}" cy="${j[1].toFixed(1)}" r="7.5" fill="#0b0e10" stroke="${au}" stroke-width="2.4"/><circle cx="${j[0].toFixed(1)}" cy="${j[1].toFixed(1)}" r="1.6" fill="${au}"/>`;
-    if(q.db===k)return`<rect x="${(j[0]-5).toFixed(1)}" y="${(j[1]-2.6).toFixed(1)}" width="10" height="5.2" rx="1.6" fill="${au}"/>`;return''};
-  if(q.bar==='p')o+=eqAt('p');
-  o+=ln(J.s,J.e,4.6,c)+ln(J.e,J.w,4.2,c);
-  if(q.fix)o+=`<circle cx="${q.fix[0]}" cy="${q.fix[1]}" r="2.6" fill="${au}"/>`;
-  if(q.bar==='w')o+=eqAt('w');if(q.db)o+=eqAt('w');
-  return `<svg viewBox="0 -9 100 107" role="img" aria-label="Ilustración de ${esc(ej.nombre)}">${o}</svg>`;
+/* ---------- maniquí animado: dibujo y movimiento por código ---------- */
+const RG={B:'#c3cccf',F:'#5f6b6f',P:'#2fc4c0',S:'#1c6f6d',E:'#8a9599',D:'#2a3033',O:' stroke="#0b0e10" stroke-opacity=".55" stroke-width=".8"'};
+const rD=a=>{a*=Math.PI/180;return[Math.sin(a),-Math.cos(a)]};
+const rA=(p,v,k=1)=>[p[0]+v[0]*k,p[1]+v[1]*k];
+const rf=n=>n.toFixed(1);
+function rIK(a,c,l1,l2,s){const dx=c[0]-a[0],dy=c[1]-a[1],d=Math.max(1,Math.min(Math.hypot(dx,dy),l1+l2-.01)),g=Math.atan2(dy,dx),k=Math.acos(Math.max(-1,Math.min(1,(l1*l1+d*d-l2*l2)/(2*l1*d))));return[a[0]+l1*Math.cos(g+s*k),a[1]+l1*Math.sin(g+s*k)]}
+function rCap(p,q,r1,r2,c,o=''){const dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy)||1,n=[dy/l,-dx/l],a=rA(p,n,r1),b=rA(q,n,r2),e=rA(q,n,-r2),g=rA(p,n,-r1);
+  return`<path d="M${rf(a[0])} ${rf(a[1])}L${rf(b[0])} ${rf(b[1])}A${r2} ${r2} 0 0 1 ${rf(e[0])} ${rf(e[1])}L${rf(g[0])} ${rf(g[1])}A${r1} ${r1} 0 0 1 ${rf(a[0])} ${rf(a[1])}Z" fill="${c}"${o}/>`}
+function rMus(p,q,t0,t1,off,w,c){const dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy)||1,n=[dy/l,-dx/l];
+  return rCap([p[0]+dx*t0+n[0]*off,p[1]+dy*t0+n[1]*off],[p[0]+dx*t1+n[0]*off,p[1]+dy*t1+n[1]*off],w,w,c)}
+const rCirc=(p,r,c,x='')=>`<circle cx="${rf(p[0])}" cy="${rf(p[1])}" r="${r}" fill="${c}"${x}/>`;
+const rLine=(p,q,c,w)=>`<line x1="${rf(p[0])}" y1="${rf(p[1])}" x2="${rf(q[0])}" y2="${rf(q[1])}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+const rRect=(x,y,w,h,c,r=2)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${c}"/>`;
+const rDisc=(p,r)=>rCirc(p,r,RG.D,' stroke="#4a5559" stroke-width="1.5"');
+const rRing=(p,r)=>rCirc(p,r,'none',` stroke="${RG.E}" stroke-width="2.5"`)+rCirc(p,3,RG.E);
+const rDb=p=>rCirc(p,7,RG.D,` stroke="${RG.E}" stroke-width="2"`)+rCirc(p,2,RG.E);
+const rMat=()=>rRect(2,184,196,5,RG.D,2.5);
+const MB={cuadriceps:j=>[j.hip,j.knee,.12,.9,4,4.2],gluteos:j=>[j.hip,j.knee,-.08,.2,-4.5,6],isquios:j=>[j.hip,j.knee,.34,.9,-4.2,3],gemelos:j=>[j.knee,j.ank,.08,.6,-3,3.4],
+  lumbares:j=>[j.sh,j.hip,.62,.92,-5.5,3],abdomen:j=>[j.sh,j.hip,.45,.9,5,3.4],pecho:j=>[j.sh,j.hip,.05,.32,5.5,4.6],dorsales:j=>[j.sh,j.hip,.2,.62,-5.5,4.4],trapecio:j=>[j.sh,j.hip,-.02,.16,-6,3.4]};
+const MA={biceps:j=>[j.sh,j.elb,.18,.88,2.4,3.4],triceps:j=>[j.sh,j.elb,.2,.86,-2.4,3.2],antebrazos:j=>[j.elb,j.hand,.08,.6,1.6,2.6]};
+const rPaint=(tbl,ej,j)=>[['sec',RG.S],['prim',RG.P]].map(([k,c])=>(ej[k]||[]).filter(m=>tbl[m]).map(m=>rMus(...tbl[m](j),c)).join('')).join('');
+const rCol=(ej,m)=>(ej.prim||[]).includes(m)?RG.P:(ej.sec||[]).includes(m)?RG.S:null;
+const FT=[17,4],rBar=r=>({back:j=>rDisc(j.hand,r),front:j=>rRing(j.hand,r)});
+const RIG={
+ sentadilla:{ank:[100,176],toe:FT,A:{hip:[99,92],to:3,hd:0,ua:200,fa:-12},B:{hip:[74,137],to:28,hd:-14},...rBar(17)},
+ banca:{ank:[156,176],toe:FT,A:{hip:[120,119],to:-90,hd:0,elb:[69,90],hand:[70,61]},B:{elb:[86,131],hand:[74,101]},
+   back:j=>rRect(34,130,102,6,RG.D)+rRect(48,136,5,48,RG.D,1)+rRect(118,136,5,48,RG.D,1)+rDisc(j.hand,19),front:j=>rRing(j.hand,19)},
+ muerto:{th:0,ank:[100,176],toe:FT,A:{hip:[68,116],to:74,hd:-48,uaw:180,faw:180},B:{hip:[99,92],to:2,hd:0,uaw:179,faw:178},...rBar(24)},
+ militar:{vb:'0 -42 200 242',ank:[100,176],toe:FT,A:{hip:[100,92],to:-2,hd:-4,elb:[110,72],hand:[112,44]},B:{elb:[105,10],hand:[104,-18]},...rBar(19)},
+ curl:{ank:[100,176],toe:FT,A:{hip:[100,92],to:0,hd:0,ua:178,fa:170},B:{ua:175,fa:24},front:j=>rDb(j.hand)},
+ triceps:{ank:[98,176],toe:FT,A:{hip:[96,92],to:8,hd:-6,uaw:178,faw:40},B:{faw:168},
+   back:()=>rRect(160,0,8,184,RG.D)+rRect(130,4,34,5,RG.D)+rCirc([134,12],4.5,RG.E),front:j=>rLine([134,12],j.hand,RG.E,1.2)+rCap(rA(j.hand,[-5,0]),rA(j.hand,[5,0]),2.2,2.2,RG.E)},
+ remo:{ank:[100,176],toe:FT,A:{hip:[76,100],to:52,hd:-38,elb:[117,98],hand:[117,126]},B:{elb:[94,66],hand:[104,92]},...rBar(15)},
+ zancadas:{ank:[128,176],toe:FT,ank2:[56,170],toe2:[10,13],A:{hip:[94,100],to:2,hd:0,uaw:180,faw:178},B:{hip:[92,134]},front:j=>rDb(j.hand)},
+ hipthrust:{th:1,ank:[140,176],toe:FT,elbS:1,A:{hip:[90,154],to:-51.5,hd:-13.5},B:{hip:[100,124],to:-88,hd:25},
+   handF:j=>{const d=[(j.hip[0]-j.sh[0])/52,(j.hip[1]-j.sh[1])/52],n=[d[1],-d[0]];return[j.sh[0]+d[0]*49+n[0]*14,j.sh[1]+d[1]*49+n[1]*14]},
+   back:j=>rRect(10,133,50,51,RG.D,3)+rDisc(j.hand,19),front:j=>rRing(j.hand,19)},
+ gemelos:{ank:[100,176],toe:FT,A:{hip:[100,92],to:0,hd:0,uaw:180,faw:178,ank:[100,176],toe:[17,4]},B:{hip:[101,82],ank:[100,166],toe:[17,14]},front:j=>rDb(j.hand)},
+ flexiones:{ank:[11,170],toe:[-3,12],A:{hip:[89.4,140.4],to:69.3,hd:-25,hand:[140,180]},B:{hip:[94.8,163.8],to:85.8,hd:-30},back:rMat},
+ plancha:{ank:[6,172],toe:[-3,10],A:{hip:[88.8,157.2],to:79.8,hd:-25,elb:[140,178],hand:[168,178]},B:{hip:[88.8,155.4]},back:rMat},
+ crunch:{ank:[166,176],toe:[15,4],A:{hip:[110,172],to:-90,hd:0,ua:60,fa:-40},B:{to:-66,hd:20},back:rMat},
+ vuelos:{fr:1,a:[6,86],db:1},
+ dominadas:{fr:1,vb:'0 0 200 212',dy:[28,-10],hands:[70,18],nofloor:1}
+};
+function rSide(e,ej,t){
+ const L=k=>{const a=e.A[k];if(a===undefined)return undefined;const b=e.B[k]===undefined?a:e.B[k];return Array.isArray(a)?[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]:a+(b-a)*t};
+ const hip=L('hip'),to=L('to'),sh=rA(hip,rD(to),52),head=rA(sh,rD(to+(L('hd')||0)),21);
+ const ank=L('ank')||e.ank,tO=L('toe')||e.toe,toe=[ank[0]+tO[0],ank[1]+tO[1]],knee=rIK(hip,ank,42,42,e.knee||-1);
+ let elb,hand;
+ if(e.handF){hand=e.handF({sh,hip});elb=rIK(sh,hand,30,28,e.elbS||1)}
+ else if(e.A.elb){elb=L('elb');hand=L('hand')}
+ else if(e.A.hand){hand=L('hand');elb=rIK(sh,hand,30,28,e.elbS||1)}
+ else if(e.A.uaw!==undefined){elb=rA(sh,rD(L('uaw')),30);hand=rA(elb,rD(L('faw')),28)}
+ else{elb=rA(sh,rD(to+L('ua')),30);hand=rA(elb,rD(to+L('fa')),28)}
+ const j={hip,sh,knee,ank,elb,hand,head},o=[3.5,-1],f=p=>[p[0]+o[0],p[1]+o[1]],B=RG.B,F=RG.F,O=RG.O;
+ let s=e.nofloor?'':rLine([0,184.5],[200,184.5],'#30373a',1.5);
+ if(e.back)s+=e.back(j);
+ if(e.ank2){const k2=rIK(hip,e.ank2,42,42,e.knee||-1),t2=[e.ank2[0]+e.toe2[0],e.ank2[1]+e.toe2[1]];s+=rCap(hip,k2,9,7,F,O)+rCap(k2,e.ank2,7,4.5,F,O)+rCap(e.ank2,t2,4,3,F,O)}
+ else s+=rCap(f(hip),f(knee),9,7,F,O)+rCap(f(knee),f(ank),7,4.5,F,O)+rCap(f(ank),f(toe),4,3,F,O);
+ s+=rCap(f(sh),f(elb),6.5,5.5,F,O)+rCap(f(elb),f(hand),5.5,4,F,O)+rCirc(f(hand),4.5,F,O);
+ s+=rCap(sh,head,5,5,B,O)+rCirc(head,11,B,O)+rCap(sh,hip,11,9,B,O);
+ s+=rCap(hip,knee,9.5,7,B,O)+rCap(knee,ank,7,4.5,B,O)+rCap(ank,toe,4,3,B,O);
+ s+=rPaint(MB,ej,j);
+ s+=rCap(sh,elb,6.5,5.5,B,O)+rCap(elb,hand,5.5,4,B,O)+rCirc(hand,4.5,B,O);
+ const h=rCol(ej,'hombros');if(h)s+=rCirc(sh,6,h);
+ s+=rPaint(MA,ej,j);
+ if(e.front)s+=e.front(j);
+ return s;
 }
-
-const mini=e=>e.img?`<img src="ej/${e.id}-${e.vid?"v":"b"}.webp" alt="" loading="lazy" width="384" height="384">`:fig(e,1);
-const grande=e=>e.vid?`<video src="ej/${e.id}.mp4" poster="ej/${e.id}-v.webp" autoplay loop muted playsinline aria-label="Animación de ${esc(e.nombre)}"></video>`:e.img?`<div class="dos">${e.img>1?`<img src="ej/${e.id}-a.webp" alt="Posición inicial de ${esc(e.nombre)}" width="384" height="384">`:''}<img src="ej/${e.id}-b.webp" alt="${e.img>1?'Posición final':'Posición'} de ${esc(e.nombre)}" width="384" height="384"></div>`:fig(e,0);
+function rFront(e,ej,t){
+ const dy=e.dy?e.dy[0]+(e.dy[1]-e.dy[0])*t:0,a=e.a?e.a[0]+(e.a[1]-e.a[0])*t:0,m=p=>[200-p[0],p[1]],Y=p=>[p[0],p[1]+dy],B=RG.B,O=RG.O;
+ const S=Y([78,47]);let E,H;
+ if(e.hands){H=e.hands;E=rIK(S,H,30,28,-1)}else{const r=a*Math.PI/180,r2=(a+8)*Math.PI/180;E=[S[0]-30*Math.sin(r),S[1]+30*Math.cos(r)];H=[E[0]-28*Math.sin(r2),E[1]+28*Math.cos(r2)]}
+ const hp=Y([91,97]),kn=Y([90,137]),an=Y([89,177]),ft=Y([85,183]);
+ let s=e.nofloor?'':rLine([0,187.5],[200,187.5],'#30373a',1.5);
+ if(e.hands)s+=rLine([34,H[1]],[166,H[1]],RG.E,4);
+ [x=>x,m].forEach(M=>{s+=rCap(M(hp),M(kn),9,7,B,O)+rCap(M(kn),M(an),7,4.5,B,O)+rCap(M(an),M(ft),4,3.2,B,O)});
+ s+=rCap(Y([100,40]),Y([100,30]),5,5,B,O)+rCirc(Y([100,22]),11,B,O)+rCap(Y([100,50]),Y([100,92]),20,13,B,O);
+ const cT=rCol(ej,'trapecio'),cD=rCol(ej,'dorsales'),cH=rCol(ej,'hombros'),cB=rCol(ej,'biceps'),cF=rCol(ej,'antebrazos');
+ if(cT)s+=rCap(Y([89,41]),Y([111,41]),4.5,4.5,cT);
+ if(cD)[x=>x,m].forEach(M=>{s+=rCap(M(Y([86,58])),M(Y([91,84])),6.5,4.5,cD)});
+ [x=>x,m].forEach(M=>{s+=rCirc(M(S),7.5,B,O)+rCap(M(S),M(E),6.5,5.5,B,O)+rCap(M(E),M(H),5.5,4,B,O);
+   if(cH)s+=rCirc(M(S),6.5,cH);if(cB)s+=rMus(M(S),M(E),.22,.85,0,3.2,cB);if(cF)s+=rMus(M(E),M(H),.1,.6,0,2.6,cF);
+   s+=rCirc(M(H),4.5,B,O);if(e.db)s+=rDb(M(H))});
+ return s;
+}
+function fig(ej,t){
+  const r=ej&&RIG[ej.id];
+  if(!r) return `<svg viewBox="0 0 100 80" role="img" aria-label="Sin ilustración"><text x="50" y="44" text-anchor="middle" font-size="9" fill="#8c979a" font-family="sans-serif">sin ilustración</text></svg>`;
+  return `<svg viewBox="${r.vb||'0 0 200 200'}" role="img" aria-label="Animación de ${esc(ej.nombre)}">${(r.fr?rFront:rSide)(r,ej,t)}</svg>`;
+}
+const mini=e=>fig(e,(RIG[e.id]&&RIG[e.id].th!==undefined)?RIG[e.id].th:1);
+const grande=e=>fig(e,0);
 
 /* mapa muscular: frente y espalda, piezas esquemáticas */
 const R=(x,y,w,h,r)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"`;
@@ -409,8 +461,7 @@ function vEjercicios(){
   const l=EJS().filter(e=>S.gm==='Todos'||e.grupo===S.gm);
   return`<h2>Ejercicios</h2><div class="chips">${['Todos',...GRUPOS_M].map(g=>`<button class="chip" aria-pressed="${S.gm===g}" data-a="gm" data-v="${g}">${g}</button>`).join('')}</div>
   <div class="grid2">${l.map(e=>`<button class="ejcard" data-a="verEj" data-id="${e.id}"><span class="figbox">${mini(e)}</span><b>${esc(e.nombre)}</b><small class="muted">${e.prim.map(m=>M[m]).join(', ')}</small></button>`).join('')}</div>
-  ${S.rol==='admin'?'<button class="btn" data-a="nuevoEj">Agregar ejercicio propio</button>':''}
-  <p class="cred"><a href="https://repdb.co" target="_blank" rel="noopener nofollow">Exercise data by RepDB (repdb.co)</a></p>`;
+  ${S.rol==='admin'?'<button class="btn" data-a="nuevoEj">Agregar ejercicio propio</button>':''}`;
 }
 
 /* ---------- vistas del socio ---------- */
@@ -439,7 +490,6 @@ function vLogin(){return`<div class="col"><img class="portada" src="logo.png" al
   <label class="campo"><span class="rot">PIN</span><input type="password" id="lPin" inputmode="numeric" autocomplete="current-password"></label>
   <button class="btn rayo" data-a="entrar">Entrar al templo</button>
   <p class="muted" style="margin:0">Tu usuario es tu número de celular. El PIN te lo da el gimnasio.</p>
-  <p class="cred"><a href="https://repdb.co" target="_blank" rel="noopener nofollow">Exercise data by RepDB (repdb.co)</a></p>
   ${REAL?'':`<p class="nota" style="margin:8px 0 0">Esto es un modelo con datos de ejemplo y no pide PIN. Elegí cómo querés verlo.</p><div class="row"><button class="btn grow" data-a="demo" data-v="admin">Entrar como dueño</button><button class="btn grow" data-a="demo" data-v="socio">Entrar como socio</button></div>`}</div>`}
 
 /* ---------- hojas ---------- */
@@ -447,7 +497,7 @@ function hoja(){
   const h=S.sheet;if(!h)return'';
   const cab=(t,sub)=>`<div class="cab"><div class="grow"><h2>${t}</h2>${sub?`<div class="muted">${sub}</div>`:''}</div><button class="icon" aria-label="Cerrar" data-a="cerrar">×</button></div>`;
   let c='';
-  if(h.t==='ej'){const e=ej(h.id);c=cab(esc(e.nombre),esc(e.equipo||''))+`<div class="figbox" id="anim" style="aspect-ratio:${e.img?"1/0.8":"1/0.82"}">${grande(e)}</div>
+  if(h.t==='ej'){const e=ej(h.id);c=cab(esc(e.nombre),esc(e.equipo||''))+`<div class="figbox" id="anim" style="aspect-ratio:1/0.9">${grande(e)}</div>
     <div class="mapa">${mapa(e.prim,e.sec)}<div class="ley"><div><i style="background:#2fc4c0"></i><b>Trabaja</b><br>${e.prim.map(m=>M[m]).join(', ')||'—'}</div>${e.sec.length?`<div><i style="background:#1c6f6d"></i><b>Acompañan</b><br>${e.sec.map(m=>M[m]).join(', ')}</div>`:''}</div></div>
     ${e.tip?`<p style="margin:0">${esc(e.tip)}</p>`:''}`}
   if(h.t==='socio'){const s=socio(h.id),e=estado(s),r=rutinaDe(s);
@@ -502,9 +552,9 @@ function render(){
 function renderHoja(){
   cancelAnimationFrame(raf);const keep=$('.hoja')?$('.hoja').scrollTop:0;
   $('#sheet').innerHTML=hoja();if($('.hoja'))$('.hoja').scrollTop=keep;
-  if(S.sheet&&S.sheet.t==='ej'){const e=ej(S.sheet.id),box=$('#anim');if(e.img)return;
-    if(!e.pose||matchMedia('(prefers-reduced-motion:reduce)').matches){if(e.pose)box.innerHTML=fig(e,1);return}
-    const t0=performance.now();const loop=n=>{const ph=((n-t0)%2600)/2600;box.innerHTML=fig(e,(1-Math.cos(ph*2*Math.PI))/2);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop)}
+  if(S.sheet&&S.sheet.t==='ej'){const e=ej(S.sheet.id),box=$('#anim');
+    if(!RIG[e.id]||matchMedia('(prefers-reduced-motion:reduce)').matches){if(RIG[e.id])box.innerHTML=fig(e,1);return}
+    const t0=performance.now();const loop=n=>{const ph=((n-t0)%3000)/3000;box.innerHTML=fig(e,(1-Math.cos(ph*2*Math.PI))/2);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop)}
 }
 const abrir=h=>{S.sheet=h;renderHoja()};
 const diaAct=()=>{const r=rut(S.rutId);return r.dias[S.dia]||r.dias[0]};
