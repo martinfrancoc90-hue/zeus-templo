@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zeus Templo Fitness</title>
+<meta name="theme-color" content="#0b0e10">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@500;600;700&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Plan: Acero. Gris grafito, un solo acento turquesa tomado del logo, superficies delineadas con líneas finas en lugar de rellenos.
+   Columna de teléfono, barra de pestañas abajo, hojas que suben desde abajo para detalle y carga. */
+:root{
+  color-scheme:dark;
+  --noche:#0b0e10; --piedra:#12171a; --piedra2:#2a3033; --linea:#30373a;
+  --marmol:#eef1f1; --humo:#8c979a; --rayo:#2fc4c0; --teal:#2fc4c0;
+  --ok:#a9b6b8; --warn:#f0a05a; --bad:#f07a7a;
+  --f-display:"Saira","Barlow",system-ui,sans-serif;
+  --f-cond:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:#050708;color:var(--marmol);font-family:var(--f-body);font-size:15px;line-height:1.4}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--rayo);outline-offset:2px}
+#app{position:relative;height:100%;max-width:480px;margin:0 auto;background:var(--noche);display:flex;flex-direction:column;overflow:hidden}
+
+/* modo de vista (solo del modelo) */
+.modo{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#050708;font-family:var(--f-cond);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--humo)}
+.modo .seg{display:flex;margin-left:auto;border:1px solid var(--linea);border-radius:8px;overflow:hidden}
+.modo .seg button{background:none;border:0;padding:5px 12px;text-transform:uppercase;letter-spacing:.06em;font-family:var(--f-cond);font-size:13px;color:var(--humo)}
+.modo .seg button[aria-pressed="true"]{background:var(--rayo);color:#06201f;font-weight:700}
+.modo select{background:var(--piedra);border:1px solid var(--linea);border-radius:8px;padding:4px 6px;font-size:13px;max-width:130px}
+
+header.marca[hidden]{display:none}
+header.marca{padding:14px 16px 0;display:flex;flex-direction:column;gap:10px}
+.marca .fila{display:flex;align-items:center;gap:10px}
+.marca .quien{margin-left:auto;text-align:right;font-size:13px;color:var(--humo)}
+.logo{height:54px;width:auto;border-radius:6px;display:block}
+.filo{height:2px;background:linear-gradient(90deg,var(--teal),var(--rayo) 45%,transparent)}
+.portada{width:86%;margin:8px auto 4px;height:auto;border-radius:10px;display:block}
+
+main{flex:1;overflow-y:auto;padding:16px 16px 24px;display:flex;flex-direction:column;gap:16px}
+main>*{flex:none}
+h2{font-family:var(--f-display);font-weight:600;font-size:18px;letter-spacing:.01em;margin:0;text-wrap:balance}
+.rot{font-family:var(--f-cond);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--humo)}
+.num{font-family:var(--f-cond);font-weight:700;font-variant-numeric:tabular-nums}
+.muted{color:var(--humo)}
+.row{display:flex;align-items:center;gap:10px}
+.wrap{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.col{display:flex;flex-direction:column;gap:10px}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tile{background:var(--piedra);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.tile .num{font-size:28px;line-height:1}
+.total{background:var(--piedra);border-left:3px solid var(--teal);border-radius:4px 12px 12px 4px;padding:12px 14px}
+.total .num{font-size:38px;line-height:1.05}
+
+.lista{display:flex;flex-direction:column}
+.item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--linea);background:none;border-left:0;border-right:0;border-top:0;text-align:left;width:100%}
+.item:last-child{border-bottom:0}
+.item .nom{font-weight:600}
+.item small{color:var(--humo);display:block}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--piedra2);display:grid;place-items:center;font-family:var(--f-cond);font-weight:700;font-size:15px;flex:none}
+.pill{font-family:var(--f-cond);font-weight:600;font-size:13px;letter-spacing:.04em;padding:3px 9px;border-radius:6px;white-space:nowrap;border:1px solid}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 50%,transparent)}
+.pill.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 55%,transparent)}
+.pill.bad{color:#fff;background:var(--bad);border-color:var(--bad)}
+
+.btn{border:1px solid var(--linea);background:var(--piedra);border-radius:10px;padding:10px 14px;font-weight:600;text-decoration:none;color:var(--marmol);display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.rayo{background:var(--rayo);border-color:var(--rayo);color:#06201f}
+.btn.chico{padding:6px 11px;font-size:14px}
+.btn.fant{background:none}
+.btn.pel{color:var(--bad)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--linea);background:none;border-radius:8px;padding:6px 13px;font-family:var(--f-cond);font-weight:600;font-size:14.5px;letter-spacing:.03em;color:var(--humo)}
+.chip[aria-pressed="true"]{background:var(--marmol);color:var(--noche);border-color:var(--marmol)}
+input[type=text],input[type=tel],input[type=password],input[type=number],input[type=search],select{background:var(--piedra);border:1px solid var(--linea);border-radius:10px;padding:10px 12px;width:100%}
+label.campo{display:flex;flex-direction:column;gap:4px}
+
+.card{background:var(--piedra);border-radius:14px;padding:12px}
+.figbox{background:var(--noche);border-radius:10px;flex:none}
+.figbox svg{display:block;width:100%;height:100%}
+.thumb{width:56px;height:56px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ejcard{background:var(--piedra);border:0;border-radius:14px;padding:10px;text-align:left;display:flex;flex-direction:column;gap:6px}
+.ejcard .figbox{aspect-ratio:1/0.8}
+.ejcard b{font-weight:600;line-height:1.2}
+
+/* bloques de rutina */
+.bloque{background:var(--piedra);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.bloque.super{border-left:3px solid var(--teal);border-radius:4px 14px 14px 4px}
+.bloque .cab{display:flex;align-items:center;gap:8px}
+.etq{font-family:var(--f-cond);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:13px;color:var(--teal)}
+.ejfila{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;text-align:left;width:100%}
+.letra{font-family:var(--f-cond);font-weight:700;color:var(--teal);width:20px;flex:none;font-size:16px}
+input.mini{width:58px;flex:none;padding:7px 6px;text-align:center;font-family:var(--f-cond);font-weight:600;font-size:16px}
+input.mini.reps{width:76px}
+.x{color:var(--humo);font-family:var(--f-cond)}
+.sets{display:flex;gap:8px;flex-wrap:wrap}
+.set{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--linea);background:none;font-family:var(--f-cond);font-weight:700;font-size:15px;color:var(--humo)}
+.set[aria-pressed="true"]{background:var(--rayo);border-color:var(--rayo);color:#06201f}
+.icon{background:none;border:0;color:var(--humo);padding:6px 8px;font-size:18px;line-height:1}
+
+nav.tabs{display:flex;border-top:1px solid var(--linea);background:var(--piedra)}
+nav.tabs button{flex:1;background:none;border:0;padding:10px 4px 12px;font-family:var(--f-cond);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:13px;color:var(--humo);border-top:2px solid transparent}
+nav.tabs button[aria-current="page"]{color:var(--rayo);border-top-color:var(--rayo)}
+
+.velo{position:absolute;inset:0;background:rgba(0,3,4,.78);display:flex;align-items:flex-end;z-index:5}
+.hoja{background:var(--noche);border-top:1px solid var(--linea);border-radius:18px 18px 0 0;width:100%;max-height:92%;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.hoja .cab{display:flex;align-items:flex-start;gap:10px}
+.mapa{display:flex;gap:14px;align-items:center}
+.mapa svg{width:150px;flex:none}
+.ley{display:flex;flex-direction:column;gap:8px;font-size:14px}
+.ley i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.modo[hidden]{display:none}
+.red{background:var(--warn);color:#1a0d02;font-weight:600;font-size:13px;text-align:center;padding:4px 12px}
+.red:empty{display:none}
+.pin{font-family:var(--f-cond);font-weight:700;font-size:56px;letter-spacing:.2em;text-align:center;color:var(--rayo);line-height:1.1}
+#toast{position:absolute;left:50%;bottom:76px;transform:translateX(-50%);max-width:90%;text-align:center;background:var(--marmol);color:var(--noche);padding:8px 14px;border-radius:99px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9;width:max-content}
+#toast.on{opacity:1}
+.nota{font-size:13px;color:var(--humo);border:1px dashed var(--linea);border-radius:10px;padding:8px 10px}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+
+/* Acero: contornos en lugar de rellenos */
+.card,.tile,.total,.bloque,.ejcard{background:transparent;border:1px solid var(--linea);border-radius:4px}
+.total,.bloque.super{border-left:3px solid var(--teal);border-radius:0}
+.total .num{color:var(--rayo)}
+.figbox{background:var(--piedra);border-radius:4px}
+.btn{border-radius:4px;background:transparent}
+.btn.rayo{background:transparent;border-color:var(--rayo);color:var(--rayo)}
+.chip{border-radius:4px}
+.chip[aria-pressed="true"]{background:transparent;color:var(--rayo);border-color:var(--rayo)}
+.pill,.pill.bad{border:0;padding:0;background:none}
+.pill.bad{color:var(--bad)}
+input[type=text],input[type=tel],input[type=password],input[type=number],input[type=search],select{border-radius:4px;background:transparent}
+select option{background:var(--piedra)}
+.hoja{border-radius:8px 8px 0 0}
+nav.tabs{background:var(--noche)}
+.avatar{background:transparent;border:1px solid var(--linea)}
+.filo{height:1px;background:var(--linea)}
+.logo,.portada{border-radius:4px}
+.modo .seg,.modo select{border-radius:4px}
+
+/* Templo: fondos, botones e íconos de imagen */
+#app{background:#0b0e10 url(bg-app.jpg) center top/cover no-repeat}
+#app.entrada{background-image:url(bg-entrada.jpg)}
+.card,.tile,.total,.bloque,.ejcard{background:rgba(8,12,14,.62)}
+.btn{border:solid transparent;border-width:11px 14px;border-image:url(btn-linea.png) 30 34 fill stretch;padding:1px 6px;background:none;border-radius:0;color:var(--marmol)}
+.btn.rayo{border-image-source:url(btn-lleno.png);color:#eafcff;background:none}
+.btn.chico{border-width:8px 11px;padding:0 4px}
+.btn.fant{border:1px solid transparent;border-image:none;padding:6px 10px}
+.btn.pel{color:var(--bad)}
+nav.tabs{background:rgba(5,7,8,.92)}
+nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px 9px}
+nav.tabs img{width:26px;height:26px;opacity:.4;filter:grayscale(.7)}
+nav.tabs button[aria-current="page"] img{opacity:1;filter:none}
+.hoja{background:#0b0e10}
+.entrada .portada{width:92%;margin:28px auto 20px}
+.figbox img{width:100%;height:100%;object-fit:contain;display:block;border-radius:4px}
+.dos{position:relative;width:100%;height:100%}
+.dos img{position:absolute;inset:0}
+.dos img:nth-child(2){animation:alterna 2.6s steps(1) infinite}
+@keyframes alterna{0%,49.9%{opacity:0}50%,100%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dos img:nth-child(2){animation:none}}
+.cred{margin:0;font-size:12px;text-align:center}.cred a{color:var(--humo)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="red" id="red" role="status"></div>
+  <div class="modo" id="modo"></div>
+  <header class="marca">
+    <div class="fila">
+      <img class="logo" src="logo.png" alt="Zeus Templo Fitness" width="900" height="423">
+      <div class="quien" id="quien"></div>
+    </div>
+    <div class="filo" aria-hidden="true"></div>
+  </header>
+  <main id="view"></main>
+  <nav class="tabs" id="tabs" aria-label="Secciones"></nav>
+  <div id="sheet"></div>
+  <div id="toast" role="status"></div>
+</div>
+<script src="config.js"></script>
+<script>
+/* ---------- utilidades ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pesos=n=>'$'+Math.round(n).toLocaleString('es-AR');
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const HOY=new Date();HOY.setHours(0,0,0,0);
+const deIso=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const mas=(n,base=HOY)=>{const d=new Date(base);d.setDate(d.getDate()+n);return iso(d)};
+const masMes=s=>{const d=deIso(s);d.setMonth(d.getMonth()+1);return iso(d)};
+const dias=s=>Math.round((deIso(s)-HOY)/864e5);
+const fecha=s=>deIso(s).toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+const uid=()=>Math.random().toString(36).slice(2,9);
+const inic=n=>n.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+let toastT;function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1900)}
+
+/* ---------- músculos y ejercicios ---------- */
+const M={pecho:'Pecho',hombros:'Hombros',biceps:'Bíceps',triceps:'Tríceps',antebrazos:'Antebrazos',abdomen:'Abdomen',cuadriceps:'Cuádriceps',isquios:'Isquiotibiales',gluteos:'Glúteos',gemelos:'Gemelos',dorsales:'Dorsales',trapecio:'Trapecio',lumbares:'Lumbares'};
+const GRUPOS_M=['Pecho','Espalda','Piernas','Glúteos','Hombros','Brazos','Core'];
+const P0={h:[50,17],s:[50,28],e:[51,42],w:[52,55],p:[50,52],k:[50,72],f:[50,92]};
+const INCL={f:[50,92],k:[55,74],p:[38,60],s:[58,44],h:[66,38],e:[58,58],w:[58,72]};
+const EJ_BASE=[
+ {id:'sentadilla',img:2,nombre:'Sentadilla con barra',grupo:'Piernas',prim:['cuadriceps','gluteos'],sec:['isquios','lumbares','abdomen'],equipo:'Barra y rack',tip:'Pies al ancho de hombros. Bajá hasta que el muslo quede paralelo al piso, con la espalda firme.',
+  pose:{a:{...P0,e:[55,38],w:[53,29]},b:{h:[54,36],s:[50,46],e:[57,56],w:[53,47],p:[39,67],k:[58,73]},eq:{bar:'w'}}},
+ {id:'banca',img:2,nombre:'Press de banca',grupo:'Pecho',prim:['pecho'],sec:['triceps','hombros'],equipo:'Banco y barra',tip:'Bajá la barra al pecho de forma controlada y empujá sin despegar la espalda del banco.',
+  pose:{a:{h:[22,58],s:[32,60],p:[58,61],k:[72,70],f:[76,92],e:[32,46],w:[32,33]},b:{e:[36,71],w:[33,58]},eq:{bar:'w',bench:[16,64,50,5]}}},
+ {id:'muerto',img:2,nombre:'Peso muerto',grupo:'Espalda',prim:['isquios','gluteos','lumbares'],sec:['trapecio','antebrazos','cuadriceps'],equipo:'Barra',tip:'La barra sube pegada a las piernas. Espalda recta de principio a fin.',
+  pose:{a:{...INCL},b:{...P0,w:[52,56]},eq:{bar:'w'}}},
+ {id:'dominadas',img:2,nombre:'Dominadas',grupo:'Espalda',prim:['dorsales'],sec:['biceps','trapecio','antebrazos'],equipo:'Barra fija',tip:'Subí hasta pasar el mentón por encima de la barra y bajá estirando los brazos por completo.',
+  pose:{a:{w:[50,8],e:[50,21],s:[50,34],h:[45,27],p:[50,58],k:[53,76],f:[47,90]},b:{s:[50,18],e:[60,15],h:[44,9],p:[50,42],k:[53,60],f:[47,74]},eq:{fix:[50,8],floor:false}}},
+ {id:'militar',img:2,nombre:'Press militar',grupo:'Hombros',prim:['hombros'],sec:['triceps','trapecio','abdomen'],equipo:'Barra',tip:'Empujá la barra en línea recta sobre la cabeza, con el abdomen apretado.',
+  pose:{a:{...P0,e:[57,40],w:[56,27]},b:{e:[54,15],w:[54,2]},eq:{bar:'w'}}},
+ {id:'vuelos',img:2,nombre:'Vuelos laterales',grupo:'Hombros',prim:['hombros'],sec:['trapecio'],equipo:'Mancuernas',tip:'Subí los brazos hasta la altura de los hombros con los codos apenas flexionados.',
+  pose:{a:{...P0},b:{e:[61,31],w:[73,30]},eq:{db:'w'}}},
+ {id:'curl',img:2,nombre:'Curl de bíceps',grupo:'Brazos',prim:['biceps'],sec:['antebrazos'],equipo:'Mancuernas',tip:'Codos pegados al cuerpo. Subí sin balancear el torso.',
+  pose:{a:{...P0,e:[50,42],w:[53,55]},b:{w:[59,32]},eq:{db:'w'}}},
+ {id:'triceps',img:2,nombre:'Extensión de tríceps en polea',grupo:'Brazos',prim:['triceps'],sec:['antebrazos'],equipo:'Polea alta',tip:'Solo se mueve el antebrazo. Estirá el brazo por completo abajo.',
+  pose:{a:{...P0,e:[51,42],w:[62,34]},b:{w:[55,55]},eq:{cable:[74,-4]}}},
+ {id:'remo',img:2,nombre:'Remo con barra',grupo:'Espalda',prim:['dorsales','trapecio'],sec:['biceps','lumbares'],equipo:'Barra',tip:'Torso inclinado y firme. Llevá la barra hacia el ombligo juntando las escápulas.',
+  pose:{a:{...INCL,w:[58,71]},b:{e:[46,48],w:[56,57]},eq:{bar:'w'}}},
+ {id:'zancadas',img:2,nombre:'Zancadas',grupo:'Piernas',prim:['cuadriceps','gluteos'],sec:['isquios','gemelos'],equipo:'Mancuernas',tip:'Paso largo. La rodilla de atrás baja casi hasta el piso y el torso queda vertical.',
+  pose:{a:{...P0,k2:[50,72],f2:[49,92]},b:{h:[50,29],s:[50,40],e:[51,54],w:[52,67],p:[50,64],k:[65,73],f:[66,92],k2:[44,82],f2:[28,88]},eq:{db:'w'}}},
+ {id:'hipthrust',img:2,nombre:'Hip thrust',grupo:'Glúteos',prim:['gluteos'],sec:['isquios','lumbares'],equipo:'Banco y barra',tip:'Espalda alta apoyada en el banco. Subí la cadera y apretá los glúteos un segundo arriba.',
+  pose:{a:{h:[20,56],s:[30,62],p:[48,80],k:[66,70],f:[70,92],e:[40,70],w:[48,76]},b:{p:[54,64],k:[72,68],e:[42,58],w:[54,60]},eq:{bar:'p',bench:[10,66,20,28]}}},
+ {id:'gemelos',img:2,nombre:'Elevación de talones',grupo:'Piernas',prim:['gemelos'],sec:[],equipo:'Mancuernas',tip:'Subí lo más alto posible sobre la punta de los pies y bajá lento.',
+  pose:{a:{...P0},b:{h:[50,12],s:[50,23],e:[51,37],w:[52,50],p:[50,47],k:[50,67]},eq:{db:'w'}}},
+ {id:'flexiones',img:2,nombre:'Flexiones de brazos',grupo:'Pecho',prim:['pecho'],sec:['triceps','hombros','abdomen'],equipo:'Sin equipo',tip:'Cuerpo en línea recta, de la cabeza a los talones. Pecho casi al piso.',
+  pose:{a:{f:[86,90],w:[28,90],s:[28,64],e:[28,77],p:[56,76],k:[70,82],h:[19,59]},b:{s:[28,80],e:[38,82],p:[56,84],k:[70,87],h:[19,76]}}},
+ {id:'plancha',img:1,nombre:'Plancha',grupo:'Core',prim:['abdomen'],sec:['hombros','lumbares','gluteos'],equipo:'Sin equipo',tip:'Antebrazos apoyados, cadera alineada. Se mide en segundos, no en repeticiones.',
+  pose:{a:{h:[17,62],s:[26,68],e:[26,88],w:[39,88],p:[54,75],k:[70,82],f:[86,90]},b:{p:[54,73]}}},
+ {id:'crunch',img:2,nombre:'Abdominales cortos',grupo:'Core',prim:['abdomen'],sec:[],equipo:'Colchoneta',tip:'Despegá solo los hombros del piso, sin tirar del cuello.',
+  pose:{a:{p:[50,88],k:[64,70],f:[78,90],s:[27,88],h:[17,86],e:[22,78],w:[17,82]},b:{s:[29,76],h:[22,67],e:[27,66],w:[21,64]}}}
+];
+
+function fig(ej,t){
+  const P=ej&&ej.pose;
+  if(!P) return `<svg viewBox="0 0 100 80" role="img" aria-label="Sin ilustración"><text x="50" y="44" text-anchor="middle" font-size="9" fill="#8c979a" font-family="sans-serif">sin ilustración</text></svg>`;
+  const g=k=>{const a=P.a[k];if(!a)return null;const b=P.b[k]||a;return[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]};
+  const ln=(p,q,w,c)=>`<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" x2="${q[0].toFixed(1)}" y2="${q[1].toFixed(1)}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const J={};['h','s','e','w','p','k','f','k2','f2'].forEach(k=>J[k]=g(k));
+  const q=P.eq||{},c='#eef1f1',c2='#5d686b',au='#2fc4c0';let o='';
+  if(q.floor!==false)o+=`<line x1="4" y1="95" x2="96" y2="95" stroke="#30373a" stroke-width="1.5"/>`;
+  if(q.bench)o+=`<rect x="${q.bench[0]}" y="${q.bench[1]}" width="${q.bench[2]}" height="${q.bench[3]}" rx="2" fill="#30373a"/><rect x="${q.bench[0]+q.bench[2]/2-2}" y="${q.bench[1]}" width="4" height="${95-q.bench[1]}" fill="#30373a"/>`;
+  if(q.fix)o+=`<line x1="${q.fix[0]}" y1="-8" x2="${q.fix[0]}" y2="${q.fix[1]}" stroke="#30373a" stroke-width="2"/>`;
+  if(q.cable)o+=ln(q.cable,J.w,1.2,au);
+  if(J.k2)o+=ln(J.p,J.k2,5,c2)+ln(J.k2,J.f2,5,c2);
+  o+=ln(J.p,J.k,5.5,c)+ln(J.k,J.f,5,c)+ln(J.s,J.p,7.5,c)+`<circle cx="${J.h[0].toFixed(1)}" cy="${J.h[1].toFixed(1)}" r="6.2" fill="${c}"/>`;
+  const eqAt=k=>{const j=J[k];if(q.bar===k)return`<circle cx="${j[0].toFixed(1)}" cy="${j[1].toFixed(1)}" r="7.5" fill="#0b0e10" stroke="${au}" stroke-width="2.4"/><circle cx="${j[0].toFixed(1)}" cy="${j[1].toFixed(1)}" r="1.6" fill="${au}"/>`;
+    if(q.db===k)return`<rect x="${(j[0]-5).toFixed(1)}" y="${(j[1]-2.6).toFixed(1)}" width="10" height="5.2" rx="1.6" fill="${au}"/>`;return''};
+  if(q.bar==='p')o+=eqAt('p');
+  o+=ln(J.s,J.e,4.6,c)+ln(J.e,J.w,4.2,c);
+  if(q.fix)o+=`<circle cx="${q.fix[0]}" cy="${q.fix[1]}" r="2.6" fill="${au}"/>`;
+  if(q.bar==='w')o+=eqAt('w');if(q.db)o+=eqAt('w');
+  return `<svg viewBox="0 -9 100 107" role="img" aria-label="Ilustración de ${esc(ej.nombre)}">${o}</svg>`;
+}
+
+const mini=e=>e.img?`<img src="ej/${e.id}-b.webp" alt="" loading="lazy" width="384" height="384">`:fig(e,1);
+const grande=e=>e.img?`<div class="dos">${e.img>1?`<img src="ej/${e.id}-a.webp" alt="Posición inicial de ${esc(e.nombre)}" width="384" height="384">`:''}<img src="ej/${e.id}-b.webp" alt="${e.img>1?'Posición final':'Posición'} de ${esc(e.nombre)}" width="384" height="384"></div>`:fig(e,0);
+
+/* mapa muscular: frente y espalda, piezas esquemáticas */
+const R=(x,y,w,h,r)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"`;
+const PAR=(x,y,w,h,r)=>[[x,y,w,h,r],[60-x-w,y,w,h,r]];
+const ZONAS={
+ f:{hombros:PAR(8,20,10,9,4.5),pecho:PAR(19,23,10.5,9,3),biceps:PAR(9.5,30,6.5,13,3),antebrazos:PAR(7,46,7,20,3.5),abdomen:[[24,34,12,21,3]],cuadriceps:PAR(18.5,68,10,26,4.5)},
+ b:{trapecio:[[22,19,16,9,3.5]],hombros:PAR(8,20,10,9,4.5),dorsales:PAR(19,29,10.5,16,3),lumbares:[[24,46,12,10,3]],triceps:PAR(9.5,30,6.5,13,3),antebrazos:PAR(7,46,7,20,3.5),gluteos:PAR(18.5,57,11,11,4.5),isquios:PAR(18.5,69,10,25,4.5),gemelos:PAR(19.5,98,8,17,4)}
+};
+function cuerpo(lado,prim,sec,dx){
+  const base='#2a3033';let o=`<g transform="translate(${dx},0)"><circle cx="30" cy="9" r="7" fill="${base}"/>`;
+  [[18,18,24,40,7],[18,54,24,14,6],...PAR(9,20,8,27,4),...PAR(7,45,7,23,3.5),...PAR(18,66,11,31,5),...PAR(19,96,9,28,4.5)].forEach(a=>o+=R(...a)+` fill="${base}"/>`);
+  for(const m in ZONAS[lado]){const col=prim.includes(m)?'#2fc4c0':sec.includes(m)?'#1c6f6d':null;if(col)ZONAS[lado][m].forEach(a=>o+=R(...a)+` fill="${col}"/>`)}
+  return o+`<text x="30" y="134" text-anchor="middle" font-size="6.5" fill="#8c979a" font-family="Barlow Condensed,sans-serif" letter-spacing="1">${lado==='f'?'FRENTE':'ESPALDA'}</text></g>`;
+}
+const mapa=(prim,sec)=>`<svg viewBox="0 0 130 138" role="img" aria-label="Músculos que trabaja">${cuerpo('f',prim,sec,0)}${cuerpo('b',prim,sec,70)}</svg>`;
+
+/* ---------- datos de ejemplo ---------- */
+function ejemplo(){
+  const planes=[{id:'libre',nombre:'Pase libre',precio:38000},{id:'3x',nombre:'3 veces por semana',precio:30000},{id:'2x',nombre:'2 veces por semana',precio:24000}];
+  const b=(ej,series,reps,descanso=60)=>({series,descanso,items:[{ej,reps}]});
+  const ss=(series,descanso,...its)=>({series,descanso,items:its.map(([ej,reps])=>({ej,reps}))});
+  const rutinas=[
+   {id:'r1',nombre:'Cuerpo completo inicial',objetivo:'Adaptación · 3 días',dias:[
+     {nombre:'Día A',bloques:[b('sentadilla',3,'12',90),b('banca',3,'10',90),ss(3,60,['remo','12'],['vuelos','15']),ss(3,45,['plancha','30 s'],['crunch','15'])]},
+     {nombre:'Día B',bloques:[b('muerto',3,'8',120),b('militar',3,'10',90),ss(3,60,['curl','12'],['triceps','12']),b('gemelos',3,'20',45)]},
+     {nombre:'Día C',bloques:[b('zancadas',3,'10 por pierna',75),b('hipthrust',3,'12',90),ss(3,90,['flexiones','al fallo'],['dominadas','máx.'],['plancha','40 s'])]}]},
+   {id:'r2',nombre:'Fuerza torso y pierna',objetivo:'Hipertrofia · 4 días',dias:[
+     {nombre:'Torso',bloques:[b('banca',4,'6-8',150),b('remo',4,'8',120),ss(3,75,['militar','10'],['dominadas','8']),ss(3,60,['curl','10'],['triceps','10'])]},
+     {nombre:'Pierna',bloques:[b('sentadilla',5,'5',180),b('muerto',3,'6',180),ss(3,75,['zancadas','12'],['hipthrust','12']),b('gemelos',4,'15',45)]}]}
+  ];
+  const grupos=[{id:'g1',nombre:'Principiantes',rutinaId:'r1'},{id:'g2',nombre:'Musculación avanzada',rutinaId:'r2'},{id:'g3',nombre:'Funcional 19 hs',rutinaId:null}];
+  const mk=(nombre,tel,plan,v,grs,rutinaId=null)=>{const precio=planes.find(p=>p.id===plan).precio;const vence=mas(v);
+    const pagos=[0,1,2].map(i=>{const d=deIso(vence);d.setMonth(d.getMonth()-1-i);return{fecha:iso(d),monto:precio,medio:['Efectivo','Transferencia','Mercado Pago'][(i+nombre.length)%3]}}).filter(p=>deIso(p.fecha)<=HOY);
+    return{id:uid(),nombre,tel,plan,vence,grupos:grs,rutinaId,pagos}};
+  const socios=[mk('Lucas Ferreyra','2604 000001','libre',18,['g2']),mk('Camila Ortiz','2604 000002','3x',3,['g1']),mk('Brenda Giménez','2604 000003','libre',-4,['g1','g3']),mk('Matías Sosa','2604 000004','libre',25,['g2']),mk('Julieta Paz','2604 000005','2x',-12,['g3']),mk('Tomás Arce','2604 000006','3x',1,['g1']),mk('Rocío Luna','2604 000007','libre',10,['g3'],'r1'),mk('Ezequiel Vera','2604 000008','2x',-1,['g2'])];
+  return{planes,rutinas,grupos,socios,ejExtra:[],alias:'ZEUS.TEMPLO.GYM',avisos:[]};
+}
+const CLAVE='zeus-modelo-v1';
+const CFG=window.ZEUS_CFG&&window.ZEUS_CFG.url?window.ZEUS_CFG:{url:'',key:''};
+const REAL=!!CFG.url, SES='zeus-sesion';
+let D;if(!REAL){try{D=JSON.parse(localStorage.getItem(CLAVE))}catch(e){}}
+if(!D||!D.socios)D=ejemplo();
+D.avisos=D.avisos||[];
+let VER=0,ACC=[],RED='',pend=0,guardando=false,sucio=false;
+const setRed=t=>{RED=t;const e=document.querySelector('#red');if(e)e.textContent=t};
+async function api(fn,args){
+  let r;try{r=await fetch(CFG.url.replace(/\/$/,'')+'/rest/v1/rpc/zeus_'+fn,{method:'POST',headers:{'Content-Type':'application/json',apikey:CFG.key},body:JSON.stringify(args)})}catch(e){throw new Error('red')}
+  if(!r.ok)throw new Error('red');
+  const j=await r.json();
+  if(j&&j.error){if(j.error==='sesion'){cerrarSesion();throw new Error('Tu sesión venció. Volvé a ingresar.')}throw new Error(j.error)}
+  return j;
+}
+const tk=()=>S.ses&&S.ses.token;
+function cerrarSesion(){try{localStorage.removeItem(SES)}catch(e){}S.ses=null;S.dentro=false;S.sheet=null;clearTimeout(pend);sucio=false;setRed('');render()}
+async function cargar(){
+  if(S.ses.rol==='admin'){const j=await api('admin_get',{p_token:tk()});VER=j.version;ACC=j.conAcceso||[];
+    if(j.datos&&j.datos.socios){D=j.datos}else{D=ejemplo();D.socios=[];D.alias='';save()}
+    D.avisos=j.avisos||[]}
+  else{const j=await api('socio_get',{p_token:tk()});
+    D={planes:j.planes||[],grupos:j.grupos||[],rutinas:j.rutinas||[],ejExtra:j.ejExtra||[],alias:j.alias||'',socios:[j.socio],avisos:j.aviso?[{socioId:j.socio.id}]:[]};S.socioId=j.socio.id}
+}
+async function push(){
+  if(guardando){clearTimeout(pend);pend=setTimeout(push,400);return}guardando=true;sucio=false;clearTimeout(pend);
+  const{avisos,...datos}=D;
+  try{const j=await api('admin_save',{p_token:tk(),p_datos:datos,p_version:VER});VER=j.version;setRed('')}
+  catch(e){if(e.message==='conflicto'){guardando=false;await cargar();render();toast('Había cambios hechos desde otro teléfono. Se actualizó la pantalla.');return}
+    if(e.message==='red'){sucio=true;setRed('Sin conexión. Los cambios se guardan cuando vuelva.');pend=setTimeout(push,5000)}}
+  guardando=false;
+}
+function save(){
+  if(!REAL){try{localStorage.setItem(CLAVE,JSON.stringify(D))}catch(e){}return}
+  if(!S.ses||S.ses.rol!=='admin')return;
+  sucio=true;clearTimeout(pend);pend=setTimeout(()=>{pend=0;push()},700);
+}
+async function flush(){clearTimeout(pend);pend=0;while(guardando)await new Promise(r=>setTimeout(r,120));if(sucio)await push();if(sucio)throw new Error('red')}
+const EJS=()=>EJ_BASE.concat(D.ejExtra);
+const ej=id=>EJS().find(e=>e.id===id)||{id,nombre:'Ejercicio eliminado',prim:[],sec:[],grupo:''};
+const socio=id=>D.socios.find(s=>s.id===id);
+const plan=id=>D.planes.find(p=>p.id===id);
+const rut=id=>D.rutinas.find(r=>r.id===id);
+function estado(s){const d=dias(s.vence);
+  if(d<0)return{k:'bad',t:`Vencida hace ${-d} ${d===-1?'día':'días'}`,d};
+  if(d<=5)return{k:'warn',t:d===0?'Vence hoy':`Vence en ${d} ${d===1?'día':'días'}`,d};
+  return{k:'ok',t:'Al día',d}}
+function rutinaDe(s){if(s.rutinaId&&rut(s.rutinaId))return rut(s.rutinaId);
+  for(const g of s.grupos){const gr=D.grupos.find(x=>x.id===g);if(gr&&gr.rutinaId&&rut(gr.rutinaId))return rut(gr.rutinaId)}return null}
+const tipoBloque=b=>b.items.length===1?null:b.items.length===2?'Superserie':b.items.length===3?'Triserie':'Circuito';
+
+/* ---------- estado de pantalla ---------- */
+const S={dentro:false,ses:null,rol:'admin',socioId:D.socios[0]?.id,tab:'pagos',sub:'socios',q:'',filtro:'Todos',rutId:null,dia:0,gm:'Todos',sheet:null,hecho:{},diaSocio:0};
+let raf=0;
+
+/* ---------- vistas del dueño ---------- */
+function vPagos(){
+  const ord=[...D.socios].sort((a,b)=>dias(a.vence)-dias(b.vence));
+  const venc=ord.filter(s=>estado(s).k==='bad'),prox=ord.filter(s=>estado(s).k==='warn');
+  const mes=HOY.getMonth(),an=HOY.getFullYear();
+  const todos=D.socios.flatMap(s=>s.pagos.map(p=>({...p,s}))).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const delMes=todos.filter(p=>{const d=deIso(p.fecha);return d.getMonth()===mes&&d.getFullYear()===an});
+  const cobrado=delMes.reduce((t,p)=>t+p.monto,0);
+  const falta=[...venc,...prox].reduce((t,s)=>t+plan(s.plan).precio,0);
+  const fila=s=>{const e=estado(s);return`<div class="item"><button class="row grow" style="background:none;border:0;padding:0;text-align:left" data-a="verSocio" data-id="${s.id}"><span class="avatar">${inic(s.nombre)}</span><span class="grow"><span class="nom">${esc(s.nombre)}</span><small>${esc(plan(s.plan).nombre)} · ${pesos(plan(s.plan).precio)}</small></span></button><span class="pill ${e.k}">${e.t}</span><button class="btn rayo chico" data-a="cobrar" data-id="${s.id}">Cobrar</button></div>`};
+  const avis=D.avisos.filter(a=>socio(a.socioId)).map(a=>{const s=socio(a.socioId);return`<div class="item"><span class="grow"><span class="nom">${esc(s.nombre)}</span><small>Avisó que transfirió · ${pesos(plan(s.plan).precio)}</small></span><button class="btn chico fant" data-a="descartarAviso" data-id="${s.id}">Descartar</button><button class="btn rayo chico" data-a="cobrar" data-id="${s.id}" data-medio="Transferencia">Confirmar</button></div>`}).join('');
+  return`${avis?`<section class="col"><h2>Avisos de transferencia</h2><div class="lista">${avis}</div></section>`:''}<div class="total"><div class="rot">Cobrado en ${HOY.toLocaleDateString('es-AR',{month:'long'})}</div><div class="num">${pesos(cobrado)}</div><div class="muted">${delMes.length} pagos · falta cobrar ${pesos(falta)}</div></div>
+  <div class="tiles"><div class="tile"><span class="num" style="color:var(--bad)">${venc.length}</span><span class="rot">Vencidas</span></div><div class="tile"><span class="num" style="color:var(--warn)">${prox.length}</span><span class="rot">Por vencer</span></div><div class="tile"><span class="num">${D.socios.length}</span><span class="rot">Socios</span></div></div>
+  <section class="col"><h2>Para cobrar</h2><div class="lista">${[...venc,...prox].map(fila).join('')||'<p class="muted">Nadie debe la cuota. Todo al día.</p>'}</div></section>
+  <section class="col"><h2>Últimos pagos</h2><div class="lista">${todos.slice(0,6).map(p=>`<div class="item"><span class="grow"><span class="nom">${esc(p.s.nombre)}</span><small>${fecha(p.fecha)} · ${esc(p.medio)}</small></span><span class="num" style="font-size:18px">${pesos(p.monto)}</span></div>`).join('')||'<p class="muted">Todavía no hay pagos registrados.</p>'}</div></section>
+  <button class="btn" data-a="ajustes">Planes, precios y alias</button>`;
+}
+function listaSocios(){
+  const q=S.q.toLowerCase();
+  const l=D.socios.filter(s=>s.nombre.toLowerCase().includes(q)).filter(s=>S.filtro==='Todos'||(S.filtro==='Vencidas'&&estado(s).k==='bad')||(S.filtro==='Por vencer'&&estado(s).k==='warn')||(S.filtro==='Al día'&&estado(s).k==='ok')).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  return l.map(s=>{const e=estado(s),r=rutinaDe(s);return`<button class="item" data-a="verSocio" data-id="${s.id}"><span class="avatar">${inic(s.nombre)}</span><span class="grow"><span class="nom">${esc(s.nombre)}</span><small>${r?esc(r.nombre):'Sin rutina'}</small></span><span class="pill ${e.k}">${e.t}</span></button>`}).join('')||'<p class="muted">No hay socios con ese filtro.</p>';
+}
+function vSocios(){
+  const seg=`<div class="chips"><button class="chip" aria-pressed="${S.sub==='socios'}" data-a="sub" data-v="socios">Socios</button><button class="chip" aria-pressed="${S.sub==='grupos'}" data-a="sub" data-v="grupos">Grupos</button></div>`;
+  if(S.sub==='grupos')return seg+`<div class="col">${D.grupos.map(g=>{const n=D.socios.filter(s=>s.grupos.includes(g.id));const r=g.rutinaId&&rut(g.rutinaId);
+    return`<button class="card ejfila" style="padding:12px" data-a="verGrupo" data-id="${g.id}"><span class="grow"><b>${esc(g.nombre)}</b><small class="muted" style="display:block">${n.length} socios · ${r?esc(r.nombre):'sin rutina'}</small></span><span class="muted">›</span></button>`}).join('')}</div>
+    <div class="row"><input type="text" id="nuevoGrupo" placeholder="Nombre del grupo nuevo" aria-label="Nombre del grupo nuevo"><button class="btn rayo" data-a="crearGrupo">Crear</button></div>`;
+  return seg+`<input type="search" id="buscar" placeholder="Buscar socio" aria-label="Buscar socio" value="${esc(S.q)}">
+  <div class="chips">${['Todos','Vencidas','Por vencer','Al día'].map(f=>`<button class="chip" aria-pressed="${S.filtro===f}" data-a="filtro" data-v="${f}">${f}</button>`).join('')}</div>
+  <div class="lista" id="lista">${listaSocios()}</div><button class="btn rayo" data-a="nuevoSocio">Agregar socio</button>`;
+}
+function filaEj(it,letra,edit,bi,ii){const e=ej(it.ej);
+  return`<div class="row">${letra?`<span class="letra">${letra}</span>`:''}<button class="ejfila grow" data-a="verEj" data-id="${e.id}"><span class="figbox thumb">${mini(e)}</span><span class="grow"><b style="font-weight:600">${esc(e.nombre)}</b><small class="muted" style="display:block">${e.prim.map(m=>M[m]).join(', ')}</small></span></button>${edit?`<input class="mini reps" type="text" value="${esc(it.reps)}" aria-label="Repeticiones de ${esc(e.nombre)}" data-c="reps" data-b="${bi}" data-i="${ii}">`:`<span class="num" style="font-size:17px;white-space:nowrap">${esc(it.reps)}</span>`}${edit&&letra?`<button class="icon" aria-label="Quitar ${esc(e.nombre)}" data-a="quitarItem" data-b="${bi}" data-i="${ii}">×</button>`:''}</div>`}
+function vRutinas(){
+  const r=S.rutId&&rut(S.rutId);
+  if(!r)return`<h2>Rutinas</h2><div class="col">${D.rutinas.map(r=>{const n=D.socios.filter(s=>rutinaDe(s)===r).length;return`<button class="card ejfila" style="padding:12px" data-a="abrirRut" data-id="${r.id}"><span class="grow"><b>${esc(r.nombre)}</b><small class="muted" style="display:block">${r.dias.length} días · ${n} socios la siguen</small></span><span class="muted">›</span></button>`}).join('')}</div><button class="btn rayo" data-a="nuevaRut">Crear rutina</button>`;
+  const d=r.dias[S.dia]||r.dias[0];
+  return`<div class="row"><button class="btn chico fant" data-a="abrirRut" data-id="">‹ Rutinas</button><span class="grow"></span><button class="btn chico" data-a="asignar">Asignar</button></div>
+  <label class="campo"><span class="rot">Nombre de la rutina</span><input type="text" value="${esc(r.nombre)}" data-c="rutNombre"></label>
+  <div class="chips">${r.dias.map((x,i)=>`<button class="chip" aria-pressed="${i===S.dia}" data-a="dia" data-v="${i}">${esc(x.nombre)}</button>`).join('')}<button class="chip" data-a="masDia">+ Día</button></div>
+  <label class="campo"><span class="rot">Nombre del día</span><input type="text" value="${esc(d.nombre)}" data-c="diaNombre"></label>
+  ${d.bloques.map((b,bi)=>{const t=tipoBloque(b);return`<div class="bloque ${t?'super':''}"><div class="cab">${t?`<span class="etq">${t}</span>`:'<span class="rot">Ejercicio</span>'}<span class="grow"></span><button class="icon" aria-label="Subir bloque" data-a="subir" data-b="${bi}">↑</button><button class="icon" aria-label="Eliminar bloque" data-a="quitarBloque" data-b="${bi}">×</button></div>
+    ${b.items.map((it,ii)=>filaEj(it,t?'ABCDEFGH'[ii]:'',true,bi,ii)).join('')}
+    <div class="row wrap"><input class="mini" type="number" min="1" value="${b.series}" aria-label="${t?'Vueltas':'Series'}" data-c="series" data-b="${bi}"><span class="x">${t?'vueltas':'series'}</span><input class="mini" type="number" min="0" step="15" value="${b.descanso}" aria-label="Descanso en segundos" data-c="descanso" data-b="${bi}"><span class="x">s de descanso</span><span class="grow"></span><button class="btn chico fant" data-a="elegir" data-modo="item" data-b="${bi}">+ combinar</button></div></div>`}).join('')||'<p class="muted">Este día todavía no tiene ejercicios.</p>'}
+  <div class="row"><button class="btn rayo grow" data-a="elegir" data-modo="simple">+ Ejercicio</button><button class="btn grow" data-a="elegir" data-modo="multi">+ Superserie</button></div>
+  <p class="nota">Combinando 2 ejercicios queda una superserie, con 3 una triserie y con 4 o más un circuito.</p>`;
+}
+function vEjercicios(){
+  const l=EJS().filter(e=>S.gm==='Todos'||e.grupo===S.gm);
+  return`<h2>Ejercicios</h2><div class="chips">${['Todos',...GRUPOS_M].map(g=>`<button class="chip" aria-pressed="${S.gm===g}" data-a="gm" data-v="${g}">${g}</button>`).join('')}</div>
+  <div class="grid2">${l.map(e=>`<button class="ejcard" data-a="verEj" data-id="${e.id}"><span class="figbox">${mini(e)}</span><b>${esc(e.nombre)}</b><small class="muted">${e.prim.map(m=>M[m]).join(', ')}</small></button>`).join('')}</div>
+  ${S.rol==='admin'?'<button class="btn" data-a="nuevoEj">Agregar ejercicio propio</button>':''}
+  <p class="cred"><a href="https://repdb.co" target="_blank" rel="noopener nofollow">Exercise data by RepDB (repdb.co)</a></p>`;
+}
+
+/* ---------- vistas del socio ---------- */
+function vMiRutina(){
+  const s=socio(S.socioId),r=rutinaDe(s),e=estado(s);
+  const aviso=e.k!=='ok'?`<button class="card row" style="border:1px solid var(--${e.k});text-align:left;width:100%" data-a="tab" data-v="cuota"><span class="grow"><b>${e.t}</b><small class="muted" style="display:block">Tocá para ver cómo pagar la cuota</small></span><span class="muted">›</span></button>`:'';
+  if(!r)return aviso+`<h2>Mi rutina</h2><p class="muted">Todavía no tenés una rutina cargada. Pedísela a tu profe.</p>`;
+  const di=Math.min(S.diaSocio,r.dias.length-1),d=r.dias[di];
+  return aviso+`<div><div class="rot">${esc(r.objetivo||'Mi rutina')}</div><h2>${esc(r.nombre)}</h2></div>
+  <div class="chips">${r.dias.map((x,i)=>`<button class="chip" aria-pressed="${i===di}" data-a="diaSocio" data-v="${i}">${esc(x.nombre)}</button>`).join('')}</div>
+  ${d.bloques.map((b,bi)=>{const t=tipoBloque(b);const k=n=>`${r.id}-${di}-${bi}-${n}`;
+    return`<div class="bloque ${t?'super':''}">${t?`<div class="cab"><span class="etq">${t}</span><span class="muted">sin descanso entre ejercicios</span></div>`:''}
+    ${b.items.map((it,ii)=>filaEj(it,t?'ABCDEFGH'[ii]:'')).join('')}
+    <div class="row wrap"><div class="sets">${Array.from({length:b.series},(_,n)=>`<button class="set" aria-pressed="${!!S.hecho[k(n)]}" aria-label="${t?'Vuelta':'Serie'} ${n+1}" data-a="hecho" data-k="${k(n)}">${n+1}</button>`).join('')}</div><span class="grow"></span><span class="muted">${b.descanso} s de descanso</span></div></div>`}).join('')}
+  <p class="nota">Tocá un ejercicio para ver cómo se hace y qué músculos trabaja. Marcá cada ${'serie'} al terminarla.</p>`;
+}
+function vCuota(){
+  const s=socio(S.socioId),e=estado(s),p=plan(s.plan);
+  return`<div class="total" style="border-left-color:var(--${e.k})"><div class="rot">Mi cuota</div><div class="num" style="font-size:30px">${e.t}</div><div class="muted">${e.d<0?'Venció':'Vence'} el ${fecha(s.vence)} · ${esc(p.nombre)} · ${pesos(p.precio)}</div></div>
+  <section class="card col"><div class="rot">Pagar por transferencia</div><div class="row"><span class="num grow" style="font-size:22px">${esc(D.alias||"Pedile el alias al gimnasio")}</span><button class="btn chico" data-a="copiar">Copiar alias</button></div>${D.avisos.some(a=>a.socioId===s.id)?'<p class="nota" style="margin:0">Aviso enviado. El gimnasio lo confirma cuando vea la transferencia.</p>':'<button class="btn rayo" data-a="avisar">Ya transferí</button>'}${REAL?'':'<small class="muted">Alias de ejemplo.</small>'}</section>
+  <section class="col"><h2>Mis pagos</h2><div class="lista">${s.pagos.map(p=>`<div class="item"><span class="grow"><span class="nom">${fecha(p.fecha)}</span><small>${esc(p.medio)}</small></span><span class="num" style="font-size:18px">${pesos(p.monto)}</span></div>`).join('')||'<p class="muted">Sin pagos registrados.</p>'}</div></section>`;
+}
+
+function vLogin(){return`<div class="col"><img class="portada" src="logo.png" alt="Zeus Templo Fitness" width="900" height="423"><h2 style="margin-top:6px">Ingresar</h2>
+  <label class="campo"><span class="rot">Celular</span><input type="tel" id="lTel" autocomplete="username" placeholder="2604 ..."></label>
+  <label class="campo"><span class="rot">PIN</span><input type="password" id="lPin" inputmode="numeric" autocomplete="current-password"></label>
+  <button class="btn rayo" data-a="entrar">Entrar al templo</button>
+  <p class="muted" style="margin:0">Tu usuario es tu número de celular. El PIN te lo da el gimnasio.</p>
+  <p class="cred"><a href="https://repdb.co" target="_blank" rel="noopener nofollow">Exercise data by RepDB (repdb.co)</a></p>
+  ${REAL?'':`<p class="nota" style="margin:8px 0 0">Esto es un modelo con datos de ejemplo y no pide PIN. Elegí cómo querés verlo.</p><div class="row"><button class="btn grow" data-a="demo" data-v="admin">Entrar como dueño</button><button class="btn grow" data-a="demo" data-v="socio">Entrar como socio</button></div>`}</div>`}
+
+/* ---------- hojas ---------- */
+function hoja(){
+  const h=S.sheet;if(!h)return'';
+  const cab=(t,sub)=>`<div class="cab"><div class="grow"><h2>${t}</h2>${sub?`<div class="muted">${sub}</div>`:''}</div><button class="icon" aria-label="Cerrar" data-a="cerrar">×</button></div>`;
+  let c='';
+  if(h.t==='ej'){const e=ej(h.id);c=cab(esc(e.nombre),esc(e.equipo||''))+`<div class="figbox" id="anim" style="aspect-ratio:${e.img?"1/0.8":"1/0.82"}">${grande(e)}</div>
+    <div class="mapa">${mapa(e.prim,e.sec)}<div class="ley"><div><i style="background:#2fc4c0"></i><b>Trabaja</b><br>${e.prim.map(m=>M[m]).join(', ')||'—'}</div>${e.sec.length?`<div><i style="background:#1c6f6d"></i><b>Acompañan</b><br>${e.sec.map(m=>M[m]).join(', ')}</div>`:''}</div></div>
+    ${e.tip?`<p style="margin:0">${esc(e.tip)}</p>`:''}`}
+  if(h.t==='socio'){const s=socio(h.id),e=estado(s),r=rutinaDe(s);
+    c=cab(esc(s.nombre),`${esc(plan(s.plan).nombre)} · ${esc(s.tel)}`)+`<div class="row wrap"><span class="pill ${e.k}">${e.t}</span><span class="muted">${e.d<0?'venció':'vence'} el ${fecha(s.vence)}</span></div>
+    <div class="row"><button class="btn rayo grow" data-a="cobrar" data-id="${s.id}">Registrar pago</button><a class="btn grow" target="_blank" rel="noopener" href="https://wa.me/549${s.tel.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${s.nombre.split(' ')[0]}, te escribimos de Zeus Templo Fitness. Tu cuota ${e.d<0?'venció':'vence'} el ${fecha(s.vence)}.`)}">Avisar por WhatsApp</a></div>
+    <label class="campo"><span class="rot">Rutina personal</span><select data-c="rutSocio" data-id="${s.id}"><option value="">La de su grupo${r&&!s.rutinaId?` (${esc(r.nombre)})`:''}</option>${D.rutinas.map(x=>`<option value="${x.id}" ${s.rutinaId===x.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></label>
+    <div class="col"><span class="rot">Grupos</span><div class="row wrap">${D.grupos.map(g=>`<button class="chip" aria-pressed="${s.grupos.includes(g.id)}" data-a="togGrupo" data-id="${s.id}" data-g="${g.id}">${esc(g.nombre)}</button>`).join('')}</div></div>
+    <div class="col"><span class="rot">Pagos</span><div class="lista">${s.pagos.map(p=>`<div class="item"><span class="grow">${fecha(p.fecha)} <small>${esc(p.medio)}</small></span><span class="num">${pesos(p.monto)}</span></div>`).join('')||'<p class="muted">Sin pagos.</p>'}</div></div>
+    <button class="btn" data-a="pin" data-id="${s.id}">${ACC.includes(s.id)?'Generar un PIN nuevo':'Generar PIN de acceso'}</button>
+    <div class="row"><button class="btn grow" data-a="verComo" data-id="${s.id}">Ver la app como ${esc(s.nombre.split(' ')[0])}</button><button class="btn pel" data-a="borrarSocio" data-id="${s.id}">Dar de baja</button></div>`}
+  if(h.t==='cobrar'){const s=socio(h.id),p=plan(s.plan);const base=dias(s.vence)<-10?iso(HOY):s.vence;
+    c=cab('Registrar pago',esc(s.nombre))+`<label class="campo"><span class="rot">Monto</span><input type="number" id="monto" value="${p.precio}" inputmode="numeric"></label>
+    <label class="campo"><span class="rot">Medio de pago</span><select id="medio">${['Efectivo','Transferencia','Mercado Pago'].map(m=>`<option ${h.medio===m?'selected':''}>${m}</option>`).join('')}</select></label>
+    <p class="muted" style="margin:0">La cuota queda paga hasta el <b style="color:var(--marmol)">${fecha(masMes(base))}</b>.</p><button class="btn rayo" data-a="confirmarPago" data-id="${s.id}" data-base="${base}">Confirmar pago</button>`}
+  if(h.t==='pin'){const s=socio(h.id),link=REAL?location.href.split('#')[0]:'(link de la app)';
+    c=cab('PIN de acceso',esc(s.nombre))+`<div class="pin">${esc(h.pin)}</div><p class="muted" style="margin:0;text-align:center">Entra con su celular <b style="color:var(--marmol)">${esc(s.tel)}</b> y este PIN. Anotalo o envialo ahora: después no se puede volver a ver, solo generar uno nuevo.</p>
+    <a class="btn rayo" target="_blank" rel="noopener" href="https://wa.me/549${s.tel.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${s.nombre.split(' ')[0]}, ya podés entrar a la app de Zeus Templo Fitness: ${link} Tu usuario es tu celular y tu PIN es ${h.pin}.`)}">Enviar por WhatsApp</a>
+    ${h.nuevo?`<button class="btn" data-a="cobrar" data-id="${s.id}">Registrar el primer pago</button>`:''}`}
+  if(h.t==='ajustes')c=cab('Planes, precios y alias')+`<label class="campo"><span class="rot">Alias para transferencias</span><input type="text" value="${esc(D.alias)}" data-c="alias" placeholder="alias.del.gimnasio"></label>
+    <div class="col"><span class="rot">Planes y precio mensual</span>${D.planes.map((p,i)=>`<div class="row"><input type="text" class="grow" value="${esc(p.nombre)}" aria-label="Nombre del plan" data-c="planNombre" data-i="${i}"><input type="number" style="width:120px;flex:none" value="${p.precio}" aria-label="Precio de ${esc(p.nombre)}" data-c="planPrecio" data-i="${i}"></div>`).join('')}</div>
+    <button class="btn" data-a="masPlan">Agregar plan</button><button class="btn rayo" data-a="cerrar">Listo</button>`;
+  if(h.t==='nuevoSocio')c=cab('Agregar socio')+`<label class="campo"><span class="rot">Nombre y apellido</span><input type="text" id="nNombre"></label><label class="campo"><span class="rot">Celular</span><input type="tel" id="nTel" placeholder="2604 ..."></label>
+    <label class="campo"><span class="rot">Plan</span><select id="nPlan">${D.planes.map(p=>`<option value="${p.id}">${esc(p.nombre)} · ${pesos(p.precio)}</option>`).join('')}</select></label><button class="btn rayo" data-a="crearSocio">Guardar socio</button>`;
+  if(h.t==='grupo'){const g=D.grupos.find(x=>x.id===h.id);
+    c=cab(esc(g.nombre),'Grupo')+`<label class="campo"><span class="rot">Rutina del grupo</span><select data-c="rutGrupo" data-id="${g.id}"><option value="">Sin rutina</option>${D.rutinas.map(x=>`<option value="${x.id}" ${g.rutinaId===x.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></label>
+    <div class="col"><span class="rot">Integrantes · tocá para sumar o quitar</span><div class="row wrap">${D.socios.map(s=>`<button class="chip" aria-pressed="${s.grupos.includes(g.id)}" data-a="togGrupo" data-id="${s.id}" data-g="${g.id}">${esc(s.nombre)}</button>`).join('')}</div></div><button class="btn pel" data-a="borrarGrupo" data-id="${g.id}">Eliminar grupo</button>`}
+  if(h.t==='asignar'){const r=rut(S.rutId);
+    c=cab('Asignar rutina',esc(r.nombre))+`<div class="col"><span class="rot">A grupos completos</span><div class="row wrap">${D.grupos.map(g=>`<button class="chip" aria-pressed="${g.rutinaId===r.id}" data-a="asigGrupo" data-id="${g.id}">${esc(g.nombre)}</button>`).join('')}</div></div>
+    <div class="col"><span class="rot">A socios puntuales</span><div class="row wrap">${D.socios.map(s=>`<button class="chip" aria-pressed="${s.rutinaId===r.id}" data-a="asigSocio" data-id="${s.id}">${esc(s.nombre)}</button>`).join('')}</div></div><button class="btn rayo" data-a="cerrar">Listo</button>`}
+  if(h.t==='elegir'){const multi=h.modo==='multi';const l=EJS().filter(e=>h.g==='Todos'||e.grupo===h.g);
+    c=cab(multi?'Armar superserie':'Elegir ejercicio',multi?'Marcá 2 o más ejercicios en orden':'')+`<div class="chips">${['Todos',...GRUPOS_M].map(g=>`<button class="chip" aria-pressed="${h.g===g}" data-a="elegirG" data-v="${g}">${g}</button>`).join('')}</div>
+    <div class="lista">${l.map(e=>{const n=h.sel.indexOf(e.id);return`<button class="item" data-a="elegirEj" data-id="${e.id}"><span class="figbox thumb">${mini(e)}</span><span class="grow"><span class="nom">${esc(e.nombre)}</span><small>${e.prim.map(m=>M[m]).join(', ')}</small></span>${n>=0?`<span class="pill warn">${'ABCDEFGH'[n]}</span>`:''}</button>`}).join('')}</div>
+    ${multi?`<button class="btn rayo" data-a="crearSuper" ${h.sel.length<2?'disabled style="opacity:.5"':''}>Agregar ${h.sel.length<2?'superserie':h.sel.length===2?'superserie':h.sel.length===3?'triserie':'circuito'}</button>`:''}`}
+  if(h.t==='nuevoEj')c=cab('Agregar ejercicio propio')+`<label class="campo"><span class="rot">Nombre</span><input type="text" id="eNombre"></label><label class="campo"><span class="rot">Grupo</span><select id="eGrupo">${GRUPOS_M.map(g=>`<option>${g}</option>`).join('')}</select></label>
+    <div class="col"><span class="rot">Músculos que trabaja</span><div class="row wrap">${Object.keys(M).map(m=>`<button class="chip" aria-pressed="${h.sel.includes(m)}" data-a="togM" data-v="${m}">${M[m]}</button>`).join('')}</div></div><button class="btn rayo" data-a="crearEj">Guardar ejercicio</button>`;
+  return`<div class="velo" data-a="velo"><div class="hoja" role="dialog" aria-modal="true">${c}</div></div>`;
+}
+
+/* ---------- render ---------- */
+const TABS={admin:[['pagos','Pagos','fecha'],['socios','Socios','socio'],['rutinas','Rutinas','rayo'],['ejercicios','Ejercicios','pesa']],socio:[['rutina','Mi rutina','rayo'],['ejercicios','Ejercicios','pesa'],['cuota','Mi cuota','fecha']]};
+function render(){
+  const adm=S.rol==='admin';$('#red').textContent=RED;$('#app').classList.toggle('entrada',!S.dentro);
+  if(!S.dentro){cancelAnimationFrame(raf);$('#modo').hidden=REAL;$('#modo').innerHTML='<span>Modelo de demostración</span>';$('.marca').hidden=true;$('#quien').innerHTML='';$('#view').innerHTML=vLogin();$('#tabs').innerHTML='';$('#sheet').innerHTML='';return}
+  $('.marca').hidden=false;const prev=REAL&&S.ses.rol==='admin'&&!adm;$('#modo').hidden=REAL&&!prev;
+  if(REAL)$('#modo').innerHTML=prev?'<span>Vista previa como socio</span><span class="seg"><button data-a="rol" data-v="admin">Volver al panel</button></span>':'';
+  else $('#modo').innerHTML=`<span>Modelo · ver como</span>${adm?'':`<select id="selSocio" aria-label="Socio">${D.socios.map(s=>`<option value="${s.id}" ${s.id===S.socioId?'selected':''}>${esc(s.nombre)}</option>`).join('')}</select>`}<span class="seg"><button aria-pressed="${adm}" data-a="rol" data-v="admin">Dueño</button><button aria-pressed="${!adm}" data-a="rol" data-v="socio">Socio</button></span>`;
+  $('#quien').innerHTML=(adm?'Panel del gimnasio':`Hola, <b style="color:var(--marmol)">${esc((socio(S.socioId)||{nombre:''}).nombre.split(' ')[0])}</b>`)+'<br><button class="btn chico fant" style="margin-top:4px;padding:2px 10px" data-a="salir">Salir</button>';
+  $('#view').innerHTML=({pagos:vPagos,socios:vSocios,rutinas:vRutinas,ejercicios:vEjercicios,rutina:vMiRutina,cuota:vCuota}[S.tab])();
+  $('#tabs').innerHTML=TABS[S.rol].map(([k,t,ic])=>`<button data-a="tab" data-v="${k}" ${S.tab===k?'aria-current="page"':''}><img src="ic-${ic}.png" alt="" width="26" height="26"><span>${t}</span></button>`).join('');
+  renderHoja();
+}
+function renderHoja(){
+  cancelAnimationFrame(raf);const keep=$('.hoja')?$('.hoja').scrollTop:0;
+  $('#sheet').innerHTML=hoja();if($('.hoja'))$('.hoja').scrollTop=keep;
+  if(S.sheet&&S.sheet.t==='ej'){const e=ej(S.sheet.id),box=$('#anim');if(e.img)return;
+    if(!e.pose||matchMedia('(prefers-reduced-motion:reduce)').matches){if(e.pose)box.innerHTML=fig(e,1);return}
+    const t0=performance.now();const loop=n=>{const ph=((n-t0)%2600)/2600;box.innerHTML=fig(e,(1-Math.cos(ph*2*Math.PI))/2);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop)}
+}
+const abrir=h=>{S.sheet=h;renderHoja()};
+const diaAct=()=>{const r=rut(S.rutId);return r.dias[S.dia]||r.dias[0]};
+
+/* ---------- acciones ---------- */
+const A={
+  rol:d=>{if(REAL&&S.ses.rol!=='admin')return;S.rol=d.v;S.tab=d.v==='admin'?'pagos':'rutina';S.sheet=null;if(!socio(S.socioId))S.socioId=D.socios[0]?.id;render()},
+  tab:d=>{S.tab=d.v;$('#view').scrollTop=0;render()},
+  sub:d=>{S.sub=d.v;render()}, filtro:d=>{S.filtro=d.v;render()}, gm:d=>{S.gm=d.v;render()},
+  cerrar:()=>{S.sheet=null;render()},
+  velo:(d,ev)=>{if(ev.target.classList.contains('velo'))A.cerrar()},
+  verEj:d=>abrir({t:'ej',id:d.id}), verSocio:d=>abrir({t:'socio',id:d.id}), cobrar:d=>abrir({t:'cobrar',id:d.id,medio:d.medio}),
+  nuevoSocio:()=>abrir({t:'nuevoSocio'}), verGrupo:d=>abrir({t:'grupo',id:d.id}), asignar:()=>abrir({t:'asignar'}),
+  nuevoEj:()=>abrir({t:'nuevoEj',sel:[]}), ajustes:()=>abrir({t:'ajustes'}),
+  masPlan:()=>{D.planes.push({id:uid(),nombre:'Plan nuevo',precio:0});save();renderHoja()},
+  confirmarPago:d=>{const s=socio(d.id),m=Number($('#monto').value)||0;if(m<=0)return toast('Ingresá un monto válido');
+    s.pagos.unshift({fecha:iso(HOY),monto:m,medio:$('#medio').value});s.vence=masMes(d.base);D.avisos=D.avisos.filter(a=>a.socioId!==s.id);save();if(REAL)api('admin_aviso_borrar',{p_token:tk(),p_socio:s.id}).catch(()=>{});S.sheet=null;render();toast(`Pago de ${s.nombre.split(' ')[0]} registrado`)},
+  descartarAviso:d=>{D.avisos=D.avisos.filter(a=>a.socioId!==d.id);save();if(REAL)api('admin_aviso_borrar',{p_token:tk(),p_socio:d.id}).catch(()=>{});render()},
+  avisar:async()=>{if(REAL&&S.ses.rol==='admin')return toast('En la vista previa no se envían avisos');
+    if(REAL){try{await api('socio_avisar',{p_token:tk()})}catch(e){return toast(e.message==='red'?'Sin conexión. Probá de nuevo.':e.message)}}
+    D.avisos.push({socioId:S.socioId,fecha:iso(HOY)});save();render();toast('Aviso enviado al gimnasio')},
+  pin:async d=>{const s=socio(d.id);let pin;
+    if(REAL){try{await flush();pin=(await api('admin_pin',{p_token:tk(),p_socio:s.id})).pin;if(!ACC.includes(s.id))ACC.push(s.id)}catch(e){return toast(e.message==='red'?'Sin conexión. Probá de nuevo.':e.message)}}
+    else pin=String(Math.floor(Math.random()*10000)).padStart(4,'0');
+    abrir({t:'pin',id:s.id,pin,nuevo:d.nuevo==='1'})},
+  entrar:async()=>{if(!REAL)return toast('En el modelo usá los botones de abajo');
+    const tel=$('#lTel').value.trim(),pin=$('#lPin').value;if(!tel||!pin)return toast('Completá celular y PIN');
+    try{S.ses=await api('login',{p_tel:tel,p_clave:pin});try{localStorage.setItem(SES,JSON.stringify(S.ses))}catch(e){}await entrarReal()}
+    catch(e){toast(e.message==='red'?'Sin conexión. Probá de nuevo.':e.message)}},
+  demo:d=>{S.ses={rol:'admin'};S.dentro=true;A.rol({v:d.v})},
+  salir:()=>{if(REAL){api('salir',{p_token:tk()}).catch(()=>{});cerrarSesion()}else{S.dentro=false;S.sheet=null;render()}},
+  crearSocio:()=>{const n=$('#nNombre').value.trim();if(!n)return toast('Falta el nombre');
+    const tel=$('#nTel').value.trim();if(tel.replace(/\D/g,'').length<6)return toast('Falta el celular: es su usuario para entrar');
+    const s={id:uid(),nombre:n,tel,plan:$('#nPlan').value,vence:iso(HOY),grupos:[],rutinaId:null,pagos:[]};D.socios.push(s);save();S.sheet=null;render();A.pin({id:s.id,nuevo:'1'})},
+  borrarSocio:d=>{D.socios=D.socios.filter(s=>s.id!==d.id);save();S.sheet=null;render();toast('Socio dado de baja')},
+  togGrupo:d=>{const s=socio(d.id);s.grupos=s.grupos.includes(d.g)?s.grupos.filter(x=>x!==d.g):[...s.grupos,d.g];save();render()},
+  crearGrupo:()=>{const n=$('#nuevoGrupo').value.trim();if(!n)return toast('Escribí el nombre del grupo');const g={id:uid(),nombre:n,rutinaId:null};D.grupos.push(g);save();S.sheet={t:'grupo',id:g.id};render()},
+  borrarGrupo:d=>{D.grupos=D.grupos.filter(g=>g.id!==d.id);D.socios.forEach(s=>s.grupos=s.grupos.filter(x=>x!==d.id));save();S.sheet=null;render()},
+  verComo:d=>{S.socioId=d.id;A.rol({v:'socio'})},
+  abrirRut:d=>{S.rutId=d.id||null;S.dia=0;$('#view').scrollTop=0;render()},
+  nuevaRut:()=>{const r={id:uid(),nombre:'Rutina nueva',objetivo:'',dias:[{nombre:'Día A',bloques:[]}]};D.rutinas.push(r);save();A.abrirRut({id:r.id})},
+  dia:d=>{S.dia=+d.v;render()}, diaSocio:d=>{S.diaSocio=+d.v;render()},
+  masDia:()=>{const r=rut(S.rutId);r.dias.push({nombre:'Día '+'ABCDEFG'[r.dias.length%7],bloques:[]});S.dia=r.dias.length-1;save();render()},
+  quitarBloque:d=>{diaAct().bloques.splice(+d.b,1);save();render()},
+  subir:d=>{const b=diaAct().bloques,i=+d.b;if(i>0){[b[i-1],b[i]]=[b[i],b[i-1]];save();render()}},
+  quitarItem:d=>{const b=diaAct().bloques[+d.b];b.items.splice(+d.i,1);save();render()},
+  elegir:d=>abrir({t:'elegir',modo:d.modo,b:d.b,g:'Todos',sel:[]}),
+  elegirG:d=>{S.sheet.g=d.v;renderHoja()},
+  elegirEj:d=>{const h=S.sheet;
+    if(h.modo==='simple'){diaAct().bloques.push({series:3,descanso:60,items:[{ej:d.id,reps:'10'}]})}
+    else if(h.modo==='item'){diaAct().bloques[+h.b].items.push({ej:d.id,reps:'10'})}
+    else{h.sel=h.sel.includes(d.id)?h.sel.filter(x=>x!==d.id):[...h.sel,d.id];return renderHoja()}
+    save();S.sheet=null;render()},
+  crearSuper:()=>{const h=S.sheet;if(h.sel.length<2)return;diaAct().bloques.push({series:3,descanso:60,items:h.sel.map(id=>({ej:id,reps:'12'}))});save();S.sheet=null;render()},
+  asigGrupo:d=>{const g=D.grupos.find(x=>x.id===d.id);g.rutinaId=g.rutinaId===S.rutId?null:S.rutId;save();renderHoja()},
+  asigSocio:d=>{const s=socio(d.id);s.rutinaId=s.rutinaId===S.rutId?null:S.rutId;save();renderHoja()},
+  togM:d=>{const h=S.sheet;const n=$('#eNombre').value,g=$('#eGrupo').value;h.sel=h.sel.includes(d.v)?h.sel.filter(x=>x!==d.v):[...h.sel,d.v];renderHoja();$('#eNombre').value=n;$('#eGrupo').value=g},
+  crearEj:()=>{const n=$('#eNombre').value.trim();if(!n)return toast('Falta el nombre');if(!S.sheet.sel.length)return toast('Marcá al menos un músculo');
+    D.ejExtra.push({id:uid(),nombre:n,grupo:$('#eGrupo').value,prim:S.sheet.sel,sec:[],equipo:'',tip:''});save();S.sheet=null;render();toast('Ejercicio agregado')},
+  hecho:d=>{S.hecho[d.k]=!S.hecho[d.k];render()},
+  copiar:()=>{try{navigator.clipboard.writeText(D.alias).then(()=>toast('Alias copiado'),()=>toast('Copialo a mano: '+D.alias))}catch(e){toast('Copialo a mano: '+D.alias)}}
+};
+const C={
+  alias:el=>{D.alias=el.value.trim()},
+  planNombre:el=>{D.planes[+el.dataset.i].nombre=el.value||'Plan'},
+  planPrecio:el=>{D.planes[+el.dataset.i].precio=Math.max(0,+el.value||0)},
+  rutNombre:el=>{rut(S.rutId).nombre=el.value||'Sin nombre'},
+  diaNombre:el=>{diaAct().nombre=el.value||'Día';render()},
+  reps:el=>{diaAct().bloques[+el.dataset.b].items[+el.dataset.i].reps=el.value},
+  series:el=>{diaAct().bloques[+el.dataset.b].series=Math.max(1,Math.min(12,+el.value||1))},
+  descanso:el=>{diaAct().bloques[+el.dataset.b].descanso=Math.max(0,+el.value||0)},
+  rutSocio:el=>{socio(el.dataset.id).rutinaId=el.value||null;render()},
+  rutGrupo:el=>{D.grupos.find(g=>g.id===el.dataset.id).rutinaId=el.value||null;render()}
+};
+document.addEventListener('click',ev=>{const el=ev.target.closest('[data-a]');if(!el||el.disabled)return;const f=A[el.dataset.a];if(f)f(el.dataset,ev)});
+document.addEventListener('change',ev=>{const el=ev.target;if(el.id==='selSocio'){S.socioId=el.value;S.hecho={};S.diaSocio=0;return render()}
+  if(el.dataset.c&&C[el.dataset.c]){C[el.dataset.c](el);save()}});
+document.addEventListener('input',ev=>{if(ev.target.id==='buscar'){S.q=ev.target.value;$('#lista').innerHTML=listaSocios()}});
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&S.sheet)A.cerrar()});
+async function entrarReal(){await cargar();S.rol=S.ses.rol;if(!socio(S.socioId))S.socioId=D.socios[0]?.id;S.tab=S.rol==='admin'?'pagos':'rutina';S.dentro=true;render()}
+document.addEventListener('visibilitychange',()=>{if(REAL&&S.dentro&&!document.hidden&&!sucio&&!guardando&&!S.sheet)cargar().then(render).catch(()=>{})});
+render();
+if(REAL){let s;try{s=JSON.parse(localStorage.getItem(SES))}catch(e){}
+  if(s&&s.token){S.ses=s;entrarReal().catch(e=>{if(e.message==='red')toast('Sin conexión. Probá de nuevo.')})}}
+</script>
+</body>
+</html>
