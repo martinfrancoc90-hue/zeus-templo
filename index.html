@@ -80,7 +80,7 @@ h2{font-family:var(--f-display);font-weight:600;font-size:18px;letter-spacing:.0
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .chip{flex:none;border:1px solid var(--linea);background:none;border-radius:8px;padding:6px 13px;font-family:var(--f-cond);font-weight:600;font-size:14.5px;letter-spacing:.03em;color:var(--humo)}
 .chip[aria-pressed="true"]{background:var(--marmol);color:var(--noche);border-color:var(--marmol)}
-input[type=text],input[type=tel],input[type=password],input[type=number],input[type=search],select{background:var(--piedra);border:1px solid var(--linea);border-radius:10px;padding:10px 12px;width:100%}
+input[type=text],input[type=tel],input[type=password],input[type=number],input[type=search],input[type=date],select{background:var(--piedra);border:1px solid var(--linea);border-radius:10px;padding:10px 12px;width:100%}
 label.campo{display:flex;flex-direction:column;gap:4px}
 
 .card{background:var(--piedra);border-radius:14px;padding:12px}
@@ -138,7 +138,7 @@ nav.tabs button[aria-current="page"]{color:var(--rayo);border-top-color:var(--ra
 .chip[aria-pressed="true"]{background:transparent;color:var(--rayo);border-color:var(--rayo)}
 .pill,.pill.bad{border:0;padding:0;background:none}
 .pill.bad{color:var(--bad)}
-input[type=text],input[type=tel],input[type=password],input[type=number],input[type=search],select{border-radius:4px;background:transparent}
+input[type=text],input[type=tel],input[type=password],input[type=number],input[type=search],input[type=date],select{border-radius:4px;background:transparent}
 select option{background:var(--piedra)}
 .hoja{border-radius:8px 8px 0 0}
 nav.tabs{background:var(--noche)}
@@ -424,6 +424,11 @@ function estado(s){const d=dias(s.vence);
   return{k:'ok',t:'Al día',d}}
 function rutinaDe(s){if(s.rutinaId&&rut(s.rutinaId))return rut(s.rutinaId);
   for(const g of s.grupos){const gr=D.grupos.find(x=>x.id===g);if(gr&&gr.rutinaId&&rut(gr.rutinaId))return rut(gr.rutinaId)}return null}
+const diasSem=(r,w)=>(w&&r.semanas&&r.semanas[w-1])?r.semanas[w-1].dias:r.dias;
+const nSem=r=>r.semanas?r.semanas.length+1:1;
+function inicioDe(s,r){if(!r)return null;if(String(r.id).startsWith('p-'))return r.inicio;if(s&&s.rutinaId===r.id)return s.rutInicio||r.inicio;const g=s&&D.grupos.find(x=>s.grupos.includes(x.id)&&x.rutinaId===r.id);return(g&&g.rutInicio)||r.inicio}
+function semIdx(r,ini){if(!r.semanas)return 0;const n=nSem(r),lu=f=>{const x=deIso(f);x.setDate(x.getDate()-(x.getDay()||7)+1);return x};return((Math.round((lu(iso(HOY))-lu(ini||iso(HOY)))/6048e5)%n)+n)%n}
+function enSemana(r,s){if(!r||!r.semanas)return r;const w=semIdx(r,inicioDe(s,r));return Object.assign({},r,{dias:diasSem(r,w),semN:w+1,semT:nSem(r)})}
 const tipoBloque=b=>b.items.length===1?null:b.items.length===2?'Superserie':b.items.length===3?'Triserie':'Circuito';
 
 /* ---------- estado de pantalla ---------- */
@@ -453,7 +458,8 @@ function listaSocios(){
   return l.map(s=>{const e=estado(s),r=rutinaDe(s);return`<button class="item" data-a="verSocio" data-id="${s.id}"><span class="avatar">${inic(s.nombre)}</span><span class="grow"><span class="nom">${esc(s.nombre)}</span><small>${r?esc(r.nombre):'Sin rutina'}</small></span><span class="pill ${e.k}">${e.t}</span></button>`}).join('')||'<p class="muted">No hay socios con ese filtro.</p>';
 }
 function vSocios(){
-  const seg=`<div class="chips"><button class="chip" aria-pressed="${S.sub==='socios'}" data-a="sub" data-v="socios">Socios</button><button class="chip" aria-pressed="${S.sub==='grupos'}" data-a="sub" data-v="grupos">Grupos</button></div>`;
+  const seg=`<div class="chips"><button class="chip" aria-pressed="${S.sub==='socios'}" data-a="sub" data-v="socios">Socios</button><button class="chip" aria-pressed="${S.sub==='grupos'}" data-a="sub" data-v="grupos">Grupos</button><button class="chip" aria-pressed="${S.sub==='asistencia'}" data-a="sub" data-v="asistencia">Asistencia</button></div>`;
+  if(S.sub==='asistencia')return seg+vAsistencia();
   if(S.sub==='grupos')return seg+`<div class="col">${D.grupos.map(g=>{const n=D.socios.filter(s=>s.grupos.includes(g.id));const r=g.rutinaId&&rut(g.rutinaId);
     return`<button class="card ejfila" style="padding:12px" data-a="verGrupo" data-id="${g.id}"><span class="grow"><b>${esc(g.nombre)}</b><small class="muted" style="display:block">${n.length} socios · ${r?esc(r.nombre):'sin rutina'}</small></span><span class="muted">›</span></button>`}).join('')}</div>
     <div class="row"><input type="text" id="nuevoGrupo" placeholder="Nombre del grupo nuevo" aria-label="Nombre del grupo nuevo"><button class="btn rayo" data-a="crearGrupo">Crear</button></div>`;
@@ -465,12 +471,14 @@ function filaEj(it,letra,edit,bi,ii){const e=ej(it.ej);
   return`<div class="row">${letra?`<span class="letra">${letra}</span>`:''}<button class="ejfila grow" data-a="verEj" data-id="${e.id}"><span class="figbox thumb">${mini(e)}</span><span class="grow"><b style="font-weight:600">${esc(e.nombre)}</b><small class="muted" style="display:block">${e.prim.map(m=>M[m]).join(', ')}</small></span></button>${edit?`<input class="mini reps" type="text" value="${esc(it.reps)}" aria-label="Repeticiones de ${esc(e.nombre)}" data-c="reps" data-b="${bi}" data-i="${ii}">`:`<span class="num" style="font-size:17px;white-space:nowrap">${esc(it.reps)}</span>`}${edit&&letra?`<button class="icon" aria-label="Quitar ${esc(e.nombre)}" data-a="quitarItem" data-b="${bi}" data-i="${ii}">×</button>`:''}</div>`}
 function vRutinas(){
   const r=S.rutId&&rut(S.rutId);
-  if(!r)return`<h2>Rutinas</h2><div class="col">${D.rutinas.map(r=>{const n=D.socios.filter(s=>rutinaDe(s)===r).length;return`<button class="card ejfila" style="padding:12px" data-a="abrirRut" data-id="${r.id}"><span class="grow"><b>${esc(r.nombre)}</b><small class="muted" style="display:block">${r.dias.length} días · ${n} socios la siguen</small></span><span class="muted">›</span></button>`}).join('')}</div><button class="btn rayo" data-a="nuevaRut">Crear rutina</button>`;
-  const d=r.dias[S.dia]||r.dias[0];
+  if(!r)return`<h2>Rutinas</h2><div class="col">${D.rutinas.map(r=>{const n=D.socios.filter(s=>rutinaDe(s)===r).length;return`<button class="card ejfila" style="padding:12px" data-a="abrirRut" data-id="${r.id}"><span class="grow"><b>${esc(r.nombre)}</b><small class="muted" style="display:block">${r.dias.length} días${r.semanas?' · mensual, '+nSem(r)+' semanas':''} · ${n} ${n===1?'socio la sigue':'socios la siguen'}</small></span><span class="muted">›</span></button>`}).join('')}</div><button class="btn rayo" data-a="nuevaRut">Crear rutina</button>`;
+  const W=Math.min(S.sem||0,nSem(r)-1),ds=diasSem(r,W),d=ds[S.dia]||ds[0];
   const mia=S.rol==='socio';
   return`<div class="row"><button class="btn chico fant" data-a="abrirRut" data-id="">‹ ${mia?'Mi rutina':'Rutinas'}</button><span class="grow"></span>${mia?`<button class="btn chico pel" data-a="borrarPropia" data-id="${r.id}">Eliminar</button>`:'<button class="btn chico" data-a="asignar">Asignar</button>'}</div>
   <label class="campo"><span class="rot">Nombre de la rutina</span><input type="text" value="${esc(r.nombre)}" data-c="rutNombre"></label>
-  <div class="chips">${r.dias.map((x,i)=>`<button class="chip" aria-pressed="${i===S.dia}" data-a="dia" data-v="${i}">${esc(x.nombre)}</button>`).join('')}<button class="chip" data-a="masDia">+ Día</button></div>
+  <div class="col" style="gap:8px"><span class="rot">Programa</span><div class="chips"><button class="chip" aria-pressed="${!r.semanas}" data-a="tipoProg" data-v="s">Semanal</button><button class="chip" aria-pressed="${!!r.semanas}" data-a="tipoProg" data-v="m">Mensual · 4 semanas</button></div>
+  ${r.semanas?`<div class="chips">${Array.from({length:nSem(r)},(_,i)=>`<button class="chip" aria-pressed="${i===W}" data-a="semEd" data-v="${i}">Semana ${i+1}</button>`).join('')}</div>${W<nSem(r)-1?`<button class="btn chico fant" style="align-self:flex-start" data-a="copiarSem">Copiar esta semana a la semana ${W+2}</button>`:''}${mia?`<label class="campo"><span class="rot">La semana 1 empieza el</span><input type="date" value="${esc(r.inicio||'')}" data-c="rutInicioP"></label>`:''}`:''}</div>
+  <div class="chips">${ds.map((x,i)=>`<button class="chip" aria-pressed="${i===S.dia}" data-a="dia" data-v="${i}">${esc(x.nombre)}</button>`).join('')}<button class="chip" data-a="masDia">+ Día</button></div>
   <label class="campo"><span class="rot">Nombre del día</span><input type="text" value="${esc(d.nombre)}" data-c="diaNombre"></label>
   ${d.bloques.map((b,bi)=>{const t=tipoBloque(b);return`<div class="bloque ${t?'super':''}"><div class="cab">${t?`<span class="etq">${t}</span>`:'<span class="rot">Ejercicio</span>'}<span class="grow"></span><button class="icon" aria-label="Subir bloque" data-a="subir" data-b="${bi}">↑</button><button class="icon" aria-label="Eliminar bloque" data-a="quitarBloque" data-b="${bi}">×</button></div>
     ${b.items.map((it,ii)=>filaEj(it,t?'ABCDEFGH'[ii]:'',true,bi,ii)).join('')}
@@ -530,7 +538,7 @@ async function mdPush(){
     if(e.message==='red'){mdDirty=true;setRed('Sin conexión. Los cambios se guardan cuando vuelva.');mdT=setTimeout(mdPush,5000)}}
   mdBusy=false;
 }
-function rutAct(s){if(s&&s.propias!==false&&MD.activa){const r=(MD.rutinas||[]).find(x=>x.id===MD.activa);if(r)return r}return s?rutinaDe(s):null}
+function rutAct(s){if(s&&s.propias!==false&&MD.activa){const r=(MD.rutinas||[]).find(x=>x.id===MD.activa);if(r)return enSemana(r,s)}return s?enSemana(rutinaDe(s),s):null}
 function conMD(md,fn){const o=MD;MD=mdNorm(md);try{return fn()}finally{MD=o}}
 function semDe(r){if(MD.semRut===r.id&&MD.sem)return MD.sem;MD.sem=semDef(r);MD.semRut=r.id;MD.semDesde=hoyS();mdSave();return MD.sem}
 function est(f,r){const L=MD.log[f],h=hoyS();
@@ -556,7 +564,7 @@ function bloquesHoy(plan,L,h){
 function vHoy(){
   const s=socio(S.socioId),r=rutAct(s),e=estado(s),hs=hoyS();
   const aviso=e.k!=='ok'?`<button class="card row" style="border:1px solid var(--${e.k});text-align:left;width:100%" data-a="tab" data-v="cuota"><span class="grow"><b>${e.t}</b><small class="muted" style="display:block">Tocá para ver cómo pagar la cuota</small></span><span class="muted">›</span></button>`:'';
-  const cab=t=>`<div><div class="rot">${HOY.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</div><h2>${t}</h2></div>`;
+  const cab=t=>`<div><div class="rot">${HOY.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}${r&&r.semN?` · semana ${r.semN} de ${r.semT}`:''}</div><h2>${t}</h2></div>`;
   if(!r)return aviso+cab('Hoy')+`<p class="muted">Todavía no tenés una rutina cargada. Pedísela a tu profe.</p>`;
   semDe(r);const L=MD.log[hs],di=L?L.dia:MD.sem[wd(hs)],h=histEj();
   let rec='';
@@ -581,7 +589,7 @@ function vMiRutina(){
   if(!r)return lista+`<p class="muted">Todavía no tenés una rutina en uso.${puede?' Creá una propia o pedísela a tu profe.':' Pedísela a tu profe.'}</p>`;
   semDe(r);const di=Math.min(S.diaSocio,r.dias.length-1),d=r.dias[di];
   return lista+`<section class="col"><h2>Mi semana</h2><p class="muted" style="margin:0">Qué día de <b style="color:var(--marmol)">${esc(r.nombre)}</b> hacés cada día.</p><div class="semana">${DSEM.map((n,i)=>`<label class="row"><span class="rot" style="width:34px">${n}</span><select class="grow" data-m="sem" data-w="${i+1}" aria-label="Entrenamiento del ${DSEML[i]}"><option value="">Descanso</option>${r.dias.map((x,j)=>`<option value="${j}" ${MD.sem[i+1]!=null&&+MD.sem[i+1]===j?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></label>`).join('')}</div></section>
-  <section class="col"><h2>Ejercicios por día</h2><div class="chips">${r.dias.map((x,i)=>`<button class="chip" aria-pressed="${i===di}" data-a="diaSocio" data-v="${i}">${esc(x.nombre)}</button>`).join('')}</div>
+  <section class="col"><h2>Ejercicios por día</h2>${r.semN?`<p class="muted" style="margin:0">Programa mensual: estás en la semana ${r.semN} de ${r.semT}.</p>`:''}<div class="chips">${r.dias.map((x,i)=>`<button class="chip" aria-pressed="${i===di}" data-a="diaSocio" data-v="${i}">${esc(x.nombre)}</button>`).join('')}</div>
   ${d.bloques.map(b=>{const t=tipoBloque(b);return`<div class="bloque ${t?'super':''}">${t?`<div class="cab"><span class="etq">${t}</span><span class="muted">sin descanso entre ejercicios</span></div>`:''}${b.items.map((it,ii)=>filaEj(it,t?'ABCDEFGH'[ii]:'')).join('')}<small class="muted">${b.series} ${t?'vueltas':'series'} · ${b.descanso} s de descanso</small></div>`}).join('')||'<p class="muted">Este día todavía no tiene ejercicios.</p>'}</section>
   <button class="btn" data-a="tab" data-v="ejercicios">Ver todos los ejercicios</button>
   <label class="row" style="gap:10px"><input type="checkbox" data-m="comparte" ${MD.comparte!==false?'checked':''}><span>Compartir mis entrenamientos y cargas con el gimnasio</span></label>`;
@@ -605,6 +613,25 @@ function vHistorial(){
   return`<div class="row"><button class="btn chico fant" data-a="mes" data-v="-1" aria-label="Mes anterior">‹</button><h2 class="grow cap" style="text-align:center">${nomMes(ym)}</h2><button class="btn chico fant" data-a="mes" data-v="1" aria-label="Mes siguiente">›</button></div>
   ${calHtml(r,ym,true)}${leyMes(r,ym)}
   <section class="col"><h2>Progreso</h2>${progHtml(true)}</section>`;
+}
+const resumenMD=md=>{md=mdNorm(md);if(md.comparte===false)return{privado:true};const dias={},lim=mas(-42);for(const f in md.log)if(f>=lim)dias[f]={n:nSets(md.log[f]),tot:md.log[f].tot||0};return{sem:md.sem,dias}};
+async function cargarAsis(){
+  let o={};
+  if(!REAL)D.socios.forEach(s=>{let md;try{md=JSON.parse(localStorage.getItem(mdKey(s.id)))}catch(e){}o[s.id]=resumenMD(md||mdDemo(s))});
+  else{try{o=(await api('admin_asistencia',{p_token:tk()})).socios||{}}
+    catch(e){for(const s of D.socios){try{const j=await api('admin_socio_datos',{p_token:tk(),p_socio:s.id});o[s.id]=j.privado?{privado:true}:resumenMD(j.datos)}catch(e2){}}}}
+  S.asis=o;
+}
+function vAsistencia(){
+  if(!S.asis)return'<p class="muted">Cargando asistencia…</p>';
+  const hs=hoyS(),lun=mas(1-wd(hs));
+  const f=D.socios.map(s=>{const a=S.asis[s.id];if(a&&a.privado)return{s,priv:1,ord:-1};const dd=(a&&a.dias)||{},fs=Object.keys(dd).filter(k=>dd[k].n>0).sort(),ult=fs.length?fs[fs.length-1]:null,hace=ult?-dias(ult):null;
+    return{s,ult,hace,sem:fs.filter(k=>k>=lun).length,plan:a&&a.sem?Object.keys(a.sem).length:0,ord:ult?hace:999}}).sort((x,y)=>y.ord-x.ord);
+  const act=f.filter(x=>x.sem>0).length,ina=f.filter(x=>!x.priv&&(x.hace==null||x.hace>=14)).length,pr=f.filter(x=>x.priv).length;
+  const cuando=x=>x.hace==null?'Sin entrenamientos en las últimas 6 semanas':x.hace===0?'Entrenó hoy':x.hace===1?'Entrenó ayer':`Último entrenamiento hace ${x.hace} días`;
+  return`<div class="tiles"><div class="tile"><span class="num" style="color:var(--rayo)">${act}</span><span class="rot">Esta semana</span></div><div class="tile"><span class="num" style="color:var(--bad)">${ina}</span><span class="rot">Inactivos</span></div><div class="tile"><span class="num">${pr}</span><span class="rot">No comparten</span></div></div>
+  <p class="muted" style="margin:0">Inactivo es quien lleva 14 días o más sin anotar un entrenamiento. Se basa en lo que cada socio marca en la app.</p>
+  <div class="lista">${f.map(x=>`<button class="item" data-a="verEntrenos" data-id="${x.s.id}"><span class="avatar">${inic(x.s.nombre)}</span><span class="grow"><span class="nom">${esc(x.s.nombre)}</span><small>${x.priv?'No comparte sus entrenamientos':cuando(x)}</small></span>${x.priv?'':`<span class="pill ${x.hace==null||x.hace>=14?'bad':x.hace>=7?'warn':'ok'}">${x.sem}${x.plan?' de '+x.plan:''} esta semana</span>`}</button>`).join('')||'<p class="muted">Todavía no hay socios.</p>'}</div>`;
 }
 function hojaDia(f){
   const L=MD.log[f],r=rutAct(socio(S.socioId)),e=est(f,r),di=L?L.dia:(r?MD.sem[wd(f)]:null),plan=L?L.plan:(r&&r.dias[di]?planDe(r,di):[]);
@@ -648,6 +675,7 @@ function hoja(){
     c=cab(esc(s.nombre),`${esc(plan(s.plan).nombre)} · ${esc(s.tel)}`)+`<div class="row wrap"><span class="pill ${e.k}">${e.t}</span><span class="muted">${e.d<0?'venció':'vence'} el ${fecha(s.vence)}</span></div>
     <div class="row"><button class="btn rayo grow" data-a="cobrar" data-id="${s.id}">Registrar pago</button><a class="btn grow" target="_blank" rel="noopener" href="https://wa.me/549${s.tel.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${s.nombre.split(' ')[0]}, te escribimos de Zeus Templo Fitness. Tu cuota ${e.d<0?'venció':'vence'} el ${fecha(s.vence)}.`)}">Avisar por WhatsApp</a></div>
     <label class="campo"><span class="rot">Rutina personal</span><select data-c="rutSocio" data-id="${s.id}"><option value="">La de su grupo${r&&!s.rutinaId?` (${esc(r.nombre)})`:''}</option>${D.rutinas.map(x=>`<option value="${x.id}" ${s.rutinaId===x.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></label>
+    ${s.rutinaId&&rut(s.rutinaId)&&rut(s.rutinaId).semanas?`<label class="campo"><span class="rot">La semana 1 del programa empieza el</span><input type="date" value="${esc(s.rutInicio||rut(s.rutinaId).inicio||'')}" data-c="iniSocio" data-id="${s.id}"></label>`:''}
     <div class="col"><span class="rot">Grupos</span><div class="row wrap">${D.grupos.map(g=>`<button class="chip" aria-pressed="${s.grupos.includes(g.id)}" data-a="togGrupo" data-id="${s.id}" data-g="${g.id}">${esc(g.nombre)}</button>`).join('')}</div></div>
     <div class="col"><span class="rot">Pagos</span><div class="lista">${s.pagos.map(p=>`<div class="item"><span class="grow">${fecha(p.fecha)} <small>${esc(p.medio)}</small></span><span class="num">${pesos(p.monto)}</span></div>`).join('')||'<p class="muted">Sin pagos.</p>'}</div></div>
     <button class="chip" style="align-self:flex-start" aria-pressed="${s.propias!==false}" data-a="togPropias" data-id="${s.id}">${s.propias!==false?'Puede armar rutinas propias':'No puede armar rutinas propias'}</button>
@@ -673,6 +701,7 @@ function hoja(){
     <label class="campo"><span class="rot">Plan</span><select id="nPlan">${D.planes.map(p=>`<option value="${p.id}">${esc(p.nombre)} · ${pesos(p.precio)}</option>`).join('')}</select></label><button class="btn rayo" data-a="crearSocio">Guardar socio</button>`;
   if(h.t==='grupo'){const g=D.grupos.find(x=>x.id===h.id);
     c=cab(esc(g.nombre),'Grupo')+`<label class="campo"><span class="rot">Rutina del grupo</span><select data-c="rutGrupo" data-id="${g.id}"><option value="">Sin rutina</option>${D.rutinas.map(x=>`<option value="${x.id}" ${g.rutinaId===x.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></label>
+    ${g.rutinaId&&rut(g.rutinaId)&&rut(g.rutinaId).semanas?`<label class="campo"><span class="rot">La semana 1 del programa empieza el</span><input type="date" value="${esc(g.rutInicio||rut(g.rutinaId).inicio||'')}" data-c="iniGrupo" data-id="${g.id}"></label>`:''}
     <div class="col"><span class="rot">Integrantes · tocá para sumar o quitar</span><div class="row wrap">${D.socios.map(s=>`<button class="chip" aria-pressed="${s.grupos.includes(g.id)}" data-a="togGrupo" data-id="${s.id}" data-g="${g.id}">${esc(s.nombre)}</button>`).join('')}</div></div><button class="btn pel" data-a="borrarGrupo" data-id="${g.id}">Eliminar grupo</button>`}
   if(h.t==='asignar'){const r=rut(S.rutId);
     c=cab('Asignar rutina',esc(r.nombre))+`<div class="col"><span class="rot">A grupos completos</span><div class="row wrap">${D.grupos.map(g=>`<button class="chip" aria-pressed="${g.rutinaId===r.id}" data-a="asigGrupo" data-id="${g.id}">${esc(g.nombre)}</button>`).join('')}</div></div>
@@ -707,13 +736,13 @@ function renderHoja(){
     const t0=performance.now();const loop=n=>{const ph=((n-t0)%3000)/3000;box.innerHTML=fig(e,(1-Math.cos(ph*2*Math.PI))/2);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop)}
 }
 const abrir=h=>{S.sheet=h;renderHoja()};
-const diaAct=()=>{const r=rut(S.rutId);return r.dias[S.dia]||r.dias[0]};
+const diaAct=()=>{const r=rut(S.rutId),ds=diasSem(r,Math.min(S.sem||0,nSem(r)-1));return ds[S.dia]||ds[0]};
 
 /* ---------- acciones ---------- */
 const A={
   rol:d=>{if(REAL&&S.ses.rol!=='admin')return;S.rol=d.v;S.rutId=null;S.tab=d.v==='admin'?'pagos':'hoy';S.sheet=null;if(!socio(S.socioId))S.socioId=D.socios[0]?.id;if(d.v==='socio'){MD=mdNorm({});mdLoad().then(render)}render()},
   tab:d=>{S.tab=d.v;if(S.rol==='socio')S.rutId=null;$('#view').scrollTop=0;render()},
-  sub:d=>{S.sub=d.v;render()}, filtro:d=>{S.filtro=d.v;render()}, gm:d=>{S.gm=d.v;render()},
+  sub:d=>{S.sub=d.v;if(d.v==='asistencia'){S.asis=null;cargarAsis().then(render)}render()}, filtro:d=>{S.filtro=d.v;render()}, gm:d=>{S.gm=d.v;render()},
   cerrar:()=>{S.sheet=null;render()},
   velo:(d,ev)=>{if(ev.target.classList.contains('velo'))A.cerrar()},
   verEj:d=>abrir({t:'ej',id:d.id}), verSocio:d=>abrir({t:'socio',id:d.id}), cobrar:d=>abrir({t:'cobrar',id:d.id,medio:d.medio}),
@@ -744,10 +773,14 @@ const A={
   crearGrupo:()=>{const n=$('#nuevoGrupo').value.trim();if(!n)return toast('Escribí el nombre del grupo');const g={id:uid(),nombre:n,rutinaId:null};D.grupos.push(g);save();S.sheet={t:'grupo',id:g.id};render()},
   borrarGrupo:d=>{D.grupos=D.grupos.filter(g=>g.id!==d.id);D.socios.forEach(s=>s.grupos=s.grupos.filter(x=>x!==d.id));save();S.sheet=null;render()},
   verComo:d=>{S.socioId=d.id;A.rol({v:'socio'})},
-  abrirRut:d=>{S.rutId=d.id||null;S.dia=0;$('#view').scrollTop=0;render()},
+  abrirRut:d=>{S.rutId=d.id||null;S.dia=0;S.sem=0;$('#view').scrollTop=0;render()},
   nuevaRut:()=>{const r={id:uid(),nombre:'Rutina nueva',objetivo:'',dias:[{nombre:'Día A',bloques:[]}]};D.rutinas.push(r);save();A.abrirRut({id:r.id})},
   dia:d=>{S.dia=+d.v;render()}, diaSocio:d=>{S.diaSocio=+d.v;render()},
-  masDia:()=>{const r=rut(S.rutId);r.dias.push({nombre:'Día '+'ABCDEFG'[r.dias.length%7],bloques:[]});S.dia=r.dias.length-1;save();render()},
+  masDia:()=>{const r=rut(S.rutId),ds=diasSem(r,Math.min(S.sem||0,nSem(r)-1));ds.push({nombre:'Día '+'ABCDEFG'[ds.length%7],bloques:[]});S.dia=ds.length-1;save();render()},
+  tipoProg:d=>{const r=rut(S.rutId);if(d.v==='m'&&!r.semanas){r.semanas=[1,2,3].map(()=>({dias:JSON.parse(JSON.stringify(r.dias))}));r.inicio=r.inicio||iso(HOY);toast('Programa mensual: la semana 1 se copió a las otras tres')}
+    else if(d.v==='s'&&r.semanas){delete r.semanas;S.sem=0;toast('Quedó solo la semana 1')}save();render()},
+  semEd:d=>{S.sem=+d.v;S.dia=0;render()},
+  copiarSem:()=>{const r=rut(S.rutId),W=Math.min(S.sem||0,nSem(r)-1);if(W>=nSem(r)-1)return;r.semanas[W]={dias:JSON.parse(JSON.stringify(diasSem(r,W)))};S.sem=W+1;S.dia=0;save();render();toast('Semana copiada')},
   quitarBloque:d=>{diaAct().bloques.splice(+d.b,1);save();render()},
   subir:d=>{const b=diaAct().bloques,i=+d.b;if(i>0){[b[i-1],b[i]]=[b[i],b[i-1]];save();render()}},
   quitarItem:d=>{const b=diaAct().bloques[+d.b];b.items.splice(+d.i,1);save();render()},
@@ -759,8 +792,8 @@ const A={
     else{h.sel=h.sel.includes(d.id)?h.sel.filter(x=>x!==d.id):[...h.sel,d.id];return renderHoja()}
     save();S.sheet=null;render()},
   crearSuper:()=>{const h=S.sheet;if(h.sel.length<2)return;diaAct().bloques.push({series:3,descanso:60,items:h.sel.map(id=>({ej:id,reps:'12'}))});save();S.sheet=null;render()},
-  asigGrupo:d=>{const g=D.grupos.find(x=>x.id===d.id);g.rutinaId=g.rutinaId===S.rutId?null:S.rutId;save();renderHoja()},
-  asigSocio:d=>{const s=socio(d.id);s.rutinaId=s.rutinaId===S.rutId?null:S.rutId;save();renderHoja()},
+  asigGrupo:d=>{const g=D.grupos.find(x=>x.id===d.id);g.rutinaId=g.rutinaId===S.rutId?null:S.rutId;g.rutInicio=iso(HOY);save();renderHoja()},
+  asigSocio:d=>{const s=socio(d.id);s.rutinaId=s.rutinaId===S.rutId?null:S.rutId;s.rutInicio=iso(HOY);save();renderHoja()},
   togM:d=>{const h=S.sheet;const n=$('#eNombre').value,g=$('#eGrupo').value;h.sel=h.sel.includes(d.v)?h.sel.filter(x=>x!==d.v):[...h.sel,d.v];renderHoja();$('#eNombre').value=n;$('#eGrupo').value=g},
   crearEj:()=>{const n=$('#eNombre').value.trim();if(!n)return toast('Falta el nombre');if(!S.sheet.sel.length)return toast('Marcá al menos un músculo');
     D.ejExtra.push({id:uid(),nombre:n,grupo:$('#eGrupo').value,prim:S.sheet.sel,sec:[],equipo:'',tip:''});save();S.sheet=null;render();toast('Ejercicio agregado')},
@@ -777,7 +810,7 @@ const A={
   mes:d=>{const ym=S.mes||hoyS().slice(0,7),x=new Date(+ym.slice(0,4),+ym.slice(5)-1+(+d.v),1);S.mes=iso(x).slice(0,7);render()},
   usarRut:d=>{if(MDRO)return toast('En la vista previa no se guardan cambios');const s=socio(S.socioId),act=rutAct(s);if(act)cerrarFaltas(act);MD.activa=d.id||null;S.diaSocio=0;S.ed={};mdSave();render();toast('Rutina en uso cambiada')},
   crearPropia:()=>{if(MDRO)return toast('En la vista previa no se guardan cambios');const r={id:'p-'+uid(),nombre:'Mi rutina',objetivo:'Rutina propia',dias:[{nombre:'Día A',bloques:[]}]};MD.rutinas.push(r);mdSave();S.rutId=r.id;S.dia=0;$('#view').scrollTop=0;render()},
-  personalizar:()=>{if(MDRO)return toast('En la vista previa no se guardan cambios');const s=socio(S.socioId),g=rutinaDe(s);if(!g)return;const eraG=rutAct(s)===g;
+  personalizar:()=>{if(MDRO)return toast('En la vista previa no se guardan cambios');const s=socio(S.socioId),g=rutinaDe(s);if(!g)return;const act0=rutAct(s),eraG=!!act0&&act0.id===g.id;
     const r=JSON.parse(JSON.stringify(g));r.id='p-'+uid();r.de=g.id;r.nombre=g.nombre+' (mía)';r.objetivo='Rutina propia';MD.rutinas.push(r);
     if(eraG){MD.activa=r.id;if(MD.semRut===g.id)MD.semRut=r.id}mdSave();S.rutId=r.id;S.dia=0;$('#view').scrollTop=0;render();toast('Copia creada. Los cambios son solo tuyos.')},
   borrarPropia:d=>{if(MDRO)return;const s=socio(S.socioId);if(MD.activa===d.id){const act=rutAct(s);if(act)cerrarFaltas(act);MD.activa=null}MD.rutinas=MD.rutinas.filter(x=>x.id!==d.id);S.rutId=null;mdSave();render();toast('Rutina eliminada')},
@@ -798,8 +831,11 @@ const C={
   reps:el=>{diaAct().bloques[+el.dataset.b].items[+el.dataset.i].reps=el.value},
   series:el=>{diaAct().bloques[+el.dataset.b].series=Math.max(1,Math.min(12,+el.value||1))},
   descanso:el=>{diaAct().bloques[+el.dataset.b].descanso=Math.max(0,+el.value||0)},
-  rutSocio:el=>{socio(el.dataset.id).rutinaId=el.value||null;render()},
-  rutGrupo:el=>{D.grupos.find(g=>g.id===el.dataset.id).rutinaId=el.value||null;render()}
+  rutSocio:el=>{const s=socio(el.dataset.id);s.rutinaId=el.value||null;s.rutInicio=iso(HOY);render()},
+  iniSocio:el=>{if(el.value)socio(el.dataset.id).rutInicio=el.value},
+  iniGrupo:el=>{if(el.value)D.grupos.find(g=>g.id===el.dataset.id).rutInicio=el.value},
+  rutInicioP:el=>{if(el.value)rut(S.rutId).inicio=el.value},
+  rutGrupo:el=>{const g=D.grupos.find(g=>g.id===el.dataset.id);g.rutinaId=el.value||null;g.rutInicio=iso(HOY);render()}
 };
 document.addEventListener('click',ev=>{const el=ev.target.closest('[data-a]');if(!el||el.disabled)return;const f=A[el.dataset.a];if(f)f(el.dataset,ev)});
 document.addEventListener('change',ev=>{const el=ev.target;if(el.id==='selSocio'){S.socioId=el.value;S.diaSocio=0;MD=mdNorm({});mdLoad().then(render);return render()}
