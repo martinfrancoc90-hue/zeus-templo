@@ -335,7 +335,7 @@ function fig(ej,t){
   if(!r) return `<svg viewBox="0 0 100 80" role="img" aria-label="Sin ilustración"><text x="50" y="44" text-anchor="middle" font-size="9" fill="#8c979a" font-family="sans-serif">sin ilustración</text></svg>`;
   return `<svg viewBox="${r.vb||'0 0 200 200'}" role="img" aria-label="Animación de ${esc(ej.nombre)}">${(r.fr?rFront:rSide)(r,ej,t)}</svg>`;
 }
-const mini=e=>fig(e,(RIG[e.id]&&RIG[e.id].th!==undefined)?RIG[e.id].th:1);
+const mini=e=>(!RIG[e.id]&&REAL&&ytId(e.video))?`<img src="https://img.youtube.com/vi/${ytId(e.video)}/mqdefault.jpg" alt="" loading="lazy" style="object-fit:cover">`:fig(e,(RIG[e.id]&&RIG[e.id].th!==undefined)?RIG[e.id].th:1);
 const grande=e=>fig(e,0);
 
 /* mapa muscular: frente y espalda, piezas esquemáticas */
@@ -413,7 +413,11 @@ function save(){
   sucio=true;clearTimeout(pend);pend=setTimeout(()=>{pend=0;push()},700);
 }
 async function flush(){clearTimeout(pend);pend=0;while(guardando)await new Promise(r=>setTimeout(r,120));if(sucio)await push();if(sucio)throw new Error('red')}
-const EJS=()=>EJ_BASE.concat(D.ejExtra);
+const EJS=()=>EJ_BASE.map(e=>{const o=D.ejExtra.find(x=>x.base&&x.id===e.id);return o?Object.assign({},e,{video:o.video||'',tip:o.tip||e.tip,propioTip:o.tip||''}):e}).concat(D.ejExtra.filter(x=>!x.base));
+const ytId=u=>{const m=String(u||'').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{6,20})/);return m?m[1]:null};
+const urlOk=u=>/^https:\/\/[^\s"'<>]+$/.test(String(u||''));
+function videoHtml(e){if(!urlOk(e.video))return'';const y=ytId(e.video);
+  return`<div class="col" style="gap:8px"><span class="rot">Video</span>${y&&REAL?`<div class="figbox" style="aspect-ratio:16/9"><iframe src="https://www.youtube-nocookie.com/embed/${y}?playsinline=1&rel=0" title="Video de ${esc(e.nombre)}" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" style="width:100%;height:100%;border:0;border-radius:4px"></iframe></div>`:''}<a class="btn" href="${esc(e.video)}" target="_blank" rel="noopener">${y&&REAL?'Abrir en YouTube':'Ver video'}</a></div>`}
 const ej=id=>EJS().find(e=>e.id===id)||{id,nombre:'Ejercicio eliminado',prim:[],sec:[],grupo:''};
 const socio=id=>D.socios.find(s=>s.id===id);
 const plan=id=>D.planes.find(p=>p.id===id);
@@ -668,9 +672,9 @@ function hoja(){
   const h=S.sheet;if(!h)return'';
   const cab=(t,sub)=>`<div class="cab"><div class="grow"><h2>${t}</h2>${sub?`<div class="muted">${sub}</div>`:''}</div><button class="icon" aria-label="Cerrar" data-a="cerrar">×</button></div>`;
   let c='';
-  if(h.t==='ej'){const e=ej(h.id);c=cab(esc(e.nombre),esc(e.equipo||''))+`<div class="figbox" id="anim" style="aspect-ratio:1/0.9">${grande(e)}</div>
+  if(h.t==='ej'){const e=ej(h.id);c=cab(esc(e.nombre),esc(e.equipo||''))+`${RIG[e.id]?`<div class="figbox" id="anim" style="aspect-ratio:1/0.9">${grande(e)}</div>`:videoHtml(e)}
     <div class="mapa">${mapa(e.prim,e.sec)}<div class="ley"><div><i style="background:#2fc4c0"></i><b>Trabaja</b><br>${e.prim.map(m=>M[m]).join(', ')||'—'}</div>${e.sec.length?`<div><i style="background:#1c6f6d"></i><b>Acompañan</b><br>${e.sec.map(m=>M[m]).join(', ')}</div>`:''}</div></div>
-    ${e.tip?`<p style="margin:0">${esc(e.tip)}</p>`:''}`}
+    ${e.tip?`<p style="margin:0">${esc(e.tip)}</p>`:''}${RIG[e.id]?videoHtml(e):''}${S.rol==='admin'&&EJS().some(x=>x.id===e.id)?`<button class="btn" data-a="editarEj" data-id="${e.id}">Editar ejercicio</button>`:''}`}
   if(h.t==='socio'){const s=socio(h.id),e=estado(s),r=rutinaDe(s);
     c=cab(esc(s.nombre),`${esc(plan(s.plan).nombre)} · ${esc(s.tel)}`)+`<div class="row wrap"><span class="pill ${e.k}">${e.t}</span><span class="muted">${e.d<0?'venció':'vence'} el ${fecha(s.vence)}</span></div>
     <div class="row"><button class="btn rayo grow" data-a="cobrar" data-id="${s.id}">Registrar pago</button><a class="btn grow" target="_blank" rel="noopener" href="https://wa.me/549${s.tel.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${s.nombre.split(' ')[0]}, te escribimos de Zeus Templo Fitness. Tu cuota ${e.d<0?'venció':'vence'} el ${fecha(s.vence)}.`)}">Avisar por WhatsApp</a></div>
@@ -710,8 +714,16 @@ function hoja(){
     c=cab(multi?'Armar superserie':'Elegir ejercicio',multi?'Marcá 2 o más ejercicios en orden':'')+`<div class="chips">${['Todos',...GRUPOS_M].map(g=>`<button class="chip" aria-pressed="${h.g===g}" data-a="elegirG" data-v="${g}">${g}</button>`).join('')}</div>
     <div class="lista">${l.map(e=>{const n=h.sel.indexOf(e.id);return`<button class="item" data-a="elegirEj" data-id="${e.id}"><span class="figbox thumb">${mini(e)}</span><span class="grow"><span class="nom">${esc(e.nombre)}</span><small>${e.prim.map(m=>M[m]).join(', ')}</small></span>${n>=0?`<span class="pill warn">${'ABCDEFGH'[n]}</span>`:''}</button>`}).join('')}</div>
     ${multi?`<button class="btn rayo" data-a="crearSuper" ${h.sel.length<2?'disabled style="opacity:.5"':''}>Agregar ${h.sel.length<2?'superserie':h.sel.length===2?'superserie':h.sel.length===3?'triserie':'circuito'}</button>`:''}`}
-  if(h.t==='nuevoEj')c=cab('Agregar ejercicio propio')+`<label class="campo"><span class="rot">Nombre</span><input type="text" id="eNombre"></label><label class="campo"><span class="rot">Grupo</span><select id="eGrupo">${GRUPOS_M.map(g=>`<option>${g}</option>`).join('')}</select></label>
-    <div class="col"><span class="rot">Músculos que trabaja</span><div class="row wrap">${Object.keys(M).map(m=>`<button class="chip" aria-pressed="${h.sel.includes(m)}" data-a="togM" data-v="${m}">${M[m]}</button>`).join('')}</div></div><button class="btn rayo" data-a="crearEj">Guardar ejercicio</button>`;
+  if(h.t==='nuevoEj'){const f=h.f,base=h.base;
+    c=cab(h.id?'Editar ejercicio':'Agregar ejercicio propio',base?esc(f.nombre):'')+(base?'<p class="muted" style="margin:0">Este ejercicio viene con la app: podés cambiarle el consejo y sumarle un video. La animación y los músculos no se modifican.</p>':
+      `<label class="campo"><span class="rot">Nombre</span><input type="text" data-h="nombre" value="${esc(f.nombre)}"></label>
+      <label class="campo"><span class="rot">Grupo</span><select data-h="grupo">${GRUPOS_M.map(g=>`<option ${f.grupo===g?'selected':''}>${g}</option>`).join('')}</select></label>
+      <label class="campo"><span class="rot">Equipo</span><input type="text" data-h="equipo" value="${esc(f.equipo)}" placeholder="Mancuernas, polea, máquina…"></label>
+      <div class="col"><span class="rot">Músculos · tocá una vez para principal, dos para secundario</span><div class="row wrap">${Object.keys(M).map(m=>{const p=h.sel.includes(m),q=h.sec.includes(m);return`<button class="chip" aria-pressed="${p||q}" style="${q?'color:var(--humo);border-color:var(--humo)':''}" data-a="togM" data-v="${m}">${M[m]}${p?' · principal':q?' · secundario':''}</button>`}).join('')}</div></div>`)+
+    `<label class="campo"><span class="rot">Consejo de técnica</span><input type="text" data-h="tip" value="${esc(f.tip)}" placeholder="Qué cuidar al hacerlo"></label>
+    <label class="campo"><span class="rot">Enlace del video</span><input type="text" inputmode="url" data-h="video" value="${esc(f.video)}" placeholder="https://youtu.be/…"></label>
+    <small class="muted">Pegá el enlace de YouTube, Instagram u otro sitio. Los de YouTube se ven dentro de la app.</small>
+    <button class="btn rayo" data-a="crearEj">Guardar</button>${h.id&&!base?`<button class="btn pel" data-a="borrarEj" data-id="${h.id}">Eliminar ejercicio</button>`:''}`}
   return`<div class="velo" data-a="velo"><div class="hoja" role="dialog" aria-modal="true">${c}</div></div>`;
 }
 
@@ -747,7 +759,9 @@ const A={
   velo:(d,ev)=>{if(ev.target.classList.contains('velo'))A.cerrar()},
   verEj:d=>abrir({t:'ej',id:d.id}), verSocio:d=>abrir({t:'socio',id:d.id}), cobrar:d=>abrir({t:'cobrar',id:d.id,medio:d.medio}),
   nuevoSocio:()=>abrir({t:'nuevoSocio'}), verGrupo:d=>abrir({t:'grupo',id:d.id}), asignar:()=>abrir({t:'asignar'}),
-  nuevoEj:()=>abrir({t:'nuevoEj',sel:[]}), ajustes:()=>abrir({t:'ajustes'}),
+  nuevoEj:()=>abrir({t:'nuevoEj',sel:[],sec:[],f:{nombre:'',grupo:GRUPOS_M[0],equipo:'',tip:'',video:''}}),
+  editarEj:d=>{const e=ej(d.id),base=EJ_BASE.some(x=>x.id===d.id);abrir({t:'nuevoEj',id:d.id,base,sel:[...(e.prim||[])],sec:[...(e.sec||[])],f:{nombre:e.nombre,grupo:e.grupo||GRUPOS_M[0],equipo:e.equipo||'',tip:base?(e.propioTip||''):(e.tip||''),video:e.video||''}})},
+  borrarEj:d=>{D.ejExtra=D.ejExtra.filter(x=>x.base||x.id!==d.id);save();S.sheet=null;render();toast('Ejercicio eliminado')}, ajustes:()=>abrir({t:'ajustes'}),
   masPlan:()=>{D.planes.push({id:uid(),nombre:'Plan nuevo',precio:0});save();renderHoja()},
   confirmarPago:d=>{const s=socio(d.id),m=Number($('#monto').value)||0;if(m<=0)return toast('Ingresá un monto válido');
     s.pagos.unshift({fecha:iso(HOY),monto:m,medio:$('#medio').value});s.vence=masMes(d.base);D.avisos=D.avisos.filter(a=>a.socioId!==s.id);save();if(REAL)api('admin_aviso_borrar',{p_token:tk(),p_socio:s.id}).catch(()=>{});S.sheet=null;render();toast(`Pago de ${s.nombre.split(' ')[0]} registrado`)},
@@ -794,9 +808,14 @@ const A={
   crearSuper:()=>{const h=S.sheet;if(h.sel.length<2)return;diaAct().bloques.push({series:3,descanso:60,items:h.sel.map(id=>({ej:id,reps:'12'}))});save();S.sheet=null;render()},
   asigGrupo:d=>{const g=D.grupos.find(x=>x.id===d.id);g.rutinaId=g.rutinaId===S.rutId?null:S.rutId;g.rutInicio=iso(HOY);save();renderHoja()},
   asigSocio:d=>{const s=socio(d.id);s.rutinaId=s.rutinaId===S.rutId?null:S.rutId;s.rutInicio=iso(HOY);save();renderHoja()},
-  togM:d=>{const h=S.sheet;const n=$('#eNombre').value,g=$('#eGrupo').value;h.sel=h.sel.includes(d.v)?h.sel.filter(x=>x!==d.v):[...h.sel,d.v];renderHoja();$('#eNombre').value=n;$('#eGrupo').value=g},
-  crearEj:()=>{const n=$('#eNombre').value.trim();if(!n)return toast('Falta el nombre');if(!S.sheet.sel.length)return toast('Marcá al menos un músculo');
-    D.ejExtra.push({id:uid(),nombre:n,grupo:$('#eGrupo').value,prim:S.sheet.sel,sec:[],equipo:'',tip:''});save();S.sheet=null;render();toast('Ejercicio agregado')},
+  togM:d=>{const h=S.sheet,m=d.v;if(h.sel.includes(m)){h.sel=h.sel.filter(x=>x!==m);h.sec.push(m)}else if(h.sec.includes(m))h.sec=h.sec.filter(x=>x!==m);else h.sel.push(m);renderHoja()},
+  crearEj:()=>{const h=S.sheet,f=h.f,v=f.video.trim();
+    if(v&&!urlOk(v))return toast('El enlace del video tiene que empezar con https://');
+    if(h.base){D.ejExtra=D.ejExtra.filter(x=>!(x.base&&x.id===h.id));if(v||f.tip.trim())D.ejExtra.push({id:h.id,base:true,video:v,tip:f.tip.trim()})}
+    else{const n=f.nombre.trim();if(!n)return toast('Falta el nombre');if(!h.sel.length)return toast('Marcá al menos un músculo principal');
+      const o={nombre:n,grupo:f.grupo,prim:h.sel,sec:h.sec,equipo:f.equipo.trim(),tip:f.tip.trim(),video:v};
+      if(h.id){const e=D.ejExtra.find(x=>!x.base&&x.id===h.id);if(e)Object.assign(e,o)}else D.ejExtra.push(Object.assign({id:uid()},o))}
+    save();S.sheet=h.id?{t:'ej',id:h.id}:null;render();toast(h.id?'Cambios guardados':'Ejercicio agregado')},
   serie:d=>{if(MDRO)return toast('En la vista previa no se guarda');const r=rutAct(socio(S.socioId)),hs=hoyS();let L=MD.log[hs];
     if(!L)L=MD.log[hs]=entrada(r,MD.sem[wd(hs)]);if(L.falta){delete L.falta;delete L.auto}
     const p=d.k.split('-'),k=p[0]+'-'+p[1],kg=$('#kg-'+k),rp=$('#rp-'+k);S.ed[k]={kg:kg?kg.value:'',reps:rp?rp.value.trim():''};
@@ -843,7 +862,7 @@ document.addEventListener('change',ev=>{const el=ev.target;if(el.id==='selSocio'
   if(el.dataset.m==='comparte'){MD.comparte=el.checked;mdSave();return}
   if(el.dataset.ed){const k=el.dataset.k;S.ed[k]=S.ed[k]||{kg:$('#kg-'+k).value,reps:$('#rp-'+k).value};S.ed[k][el.dataset.ed]=el.value.trim();return}
   if(el.dataset.c&&C[el.dataset.c]){C[el.dataset.c](el);save()}});
-document.addEventListener('input',ev=>{if(ev.target.id==='buscar'){S.q=ev.target.value;$('#lista').innerHTML=listaSocios()}});
+document.addEventListener('input',ev=>{if(ev.target.dataset.h&&S.sheet&&S.sheet.f){S.sheet.f[ev.target.dataset.h]=ev.target.value;return}if(ev.target.id==='buscar'){S.q=ev.target.value;$('#lista').innerHTML=listaSocios()}});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&S.sheet)A.cerrar()});
 async function entrarReal(){await cargar();S.rol=S.ses.rol;if(!socio(S.socioId))S.socioId=D.socios[0]?.id;S.tab=S.rol==='admin'?'pagos':'hoy';if(S.rol==='socio')await mdLoad();S.dentro=true;render()}
 document.addEventListener('visibilitychange',()=>{HOY.setTime(new Date().setHours(0,0,0,0));if(REAL&&S.dentro&&!document.hidden&&!sucio&&!guardando&&!mdDirty&&!mdBusy&&!S.sheet)cargar().then(()=>S.rol==='socio'&&S.ses.rol==='socio'?mdLoad():0).then(render).catch(()=>{})});
